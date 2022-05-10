@@ -1,7 +1,7 @@
 {
   "name": "react-native-mechanic-map",
   "version": "0.1.0",
-  "description": "React Native wrapper for mechanic map",
+  "description": "React Native wrapper for Mechanic Map",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -69,7 +69,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-webview": "^11.18.2"
   },
   "jest": {
     "preset": "react-native",

@@ -1,0 +1,31 @@
+/**
+ * Register font asset source folder
+ */
+android.sourceSets.main.assets.srcDirs += file("$buildDir/intermediates/ReactNativeMechanicMap")
+
+/**
+ * Task to copy icon font files
+ */
+afterEvaluate {
+    def mapsDir = "../../../assets";
+    def iconFontNames = [ "*.html" ];
+
+    def mapCopyTask = tasks.create(
+        name: "copyReactNativeMechanicMap",
+        type: Copy) {
+        description = "copy mechanic map."
+        into "$buildDir/intermediates/ReactNativeMechanicMap/assets"
+
+        iconFontNames.each { mapName ->
+            from(mapsDir) {
+                include(mapName)
+            }
+        }
+    }
+
+    android.applicationVariants.all { def variant ->
+        def targetName = variant.name.capitalize()
+        def generateAssetsTask = tasks.findByName("generate${targetName}Assets")
+        generateAssetsTask.dependsOn(mapCopyTask)
+    }
+}
