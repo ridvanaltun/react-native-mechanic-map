@@ -88,6 +88,12 @@ jobs:
           name: Authenticate with registry
           command: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
       - run:
+          name: Add GitHub to known_hosts
+          command: |
+            mkdir ~/.ssh
+            touch ~/.ssh/known_hosts
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - run:
           name: Publish package
           command: npm run release -- --ci --no-git.requireCleanWorkingDir
 
