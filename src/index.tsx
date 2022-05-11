@@ -298,9 +298,9 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
         source={
           Platform.OS === 'android'
             ? {
-                uri: 'file:///android_asset/assets/mall.html',
+                uri: 'file:///android_asset/assets/mechanic_map.html',
               }
-            : require('../assets/mall.html')
+            : require('../assets/mechanic_map.html')
         }
         onMessage={(event: WebViewMessageEvent) => {
           const { action, data }: EventPayload = JSON.parse(
