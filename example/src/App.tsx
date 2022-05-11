@@ -10,6 +10,7 @@ import {
 import MechanicMap, {
   MechanicMapHandle,
   LocationTypes,
+  MapAnimationModes,
 } from 'react-native-mechanic-map';
 
 import Payload from './Payload';
@@ -119,6 +120,20 @@ export default function App() {
         options={{
           rotate: 90,
           initialScaleFactor: 1.25,
+          textOnRect: {
+            fontFamily: 'sans-serif',
+            fillColor: '#FFF',
+            fontSize: 8,
+          },
+          // stackMode: {
+          //   offset: 20,
+          // },
+          animation: {
+            mode: MapAnimationModes.LINE,
+            frequencyFactor: 8,
+            speedFactor: 8,
+            // stackAnimation: true,
+          },
         }}
         onLocationOpened={(target) => {
           console.log(`target is ${target}`);

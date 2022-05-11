@@ -61,12 +61,36 @@ export interface MechanicMapPayload {
   show: Boolean;
 }
 
+export enum MapModes {
+  DEFAULT = 'default',
+  PICKER = 'picker',
+}
+
+export enum MapActionModes {
+  DEFAULT = 'default',
+  TOOLTIP = 'tooltip',
+  SELECT = 'select',
+  ZOOM = 'zoom',
+  NOT_EMPTY = 'not-empty',
+}
+
+export enum MapAnimationModes {
+  LINE = 'line',
+  DOT = 'dot',
+  ARROW = 'arrow',
+  FOOT = 'foot',
+  FEET = 'feet',
+}
+
 interface MechanicMapOptions {
+  mode?: MapModes;
+  action?: MapActionModes;
   initialScaleFactor?: Number;
   maxScale?: Number;
   rotate?: Number;
   selector?: String;
   serviceSelector?: String;
+  rectSelector?: String;
   rotateServices?: Boolean;
   draggable?: Boolean;
   landmark?: Boolean;
@@ -74,6 +98,36 @@ interface MechanicMapOptions {
   zoom?: Boolean;
   zoomToSelected?: Boolean;
   hoverTip?: Boolean;
+  cssAnimation?: Boolean;
+  textOnRect?: {
+    fontFamily?: String;
+    fillColor?: String;
+    fontSize: Number;
+  };
+  strokeOptions?: {
+    width?: Number;
+    color?: String;
+  };
+  helperTexts?: {
+    youAreHere: String;
+  };
+  mapFill?: Boolean;
+  tooltip?: {
+    enabled: Boolean;
+    navigation?: Boolean;
+    detail?: Boolean;
+  };
+  smartip?: Boolean;
+  animation?: {
+    mode?: MapAnimationModes;
+    speedFactor?: Number;
+    frequencyFactor?: Number;
+    stackAnimation?: Boolean;
+  };
+  stackMode?: {
+    offset: Number;
+  };
+  beaconMode?: Boolean;
 }
 
 interface PostMessagePayload {

@@ -4481,123 +4481,110 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
 //# sourceMappingURL=map-dist.js.map</script>
 
 <style>
-    body {
-      margin: 0px;
-      background-color:#fff;
+  body {
+    margin: 0px;
+  }
+  svg g#shadow > * {
+    stroke: none;
+    fill: #ededed;
+  }
+  svg g#shadow > path {
+    stroke: none;
+    fill: #424242;
+  }
+  .navigation-line-animation {
+    animation: navigation-line-animation 2s infinite;
+  }
+  @keyframes navigation-fill-services {
+    0% {
+      fill: #d8d8d8;
+      stroke: #d8d8d8;
     }
-    #Dummies > path {
-        fill:#fff;
+    50% {
+      fill: rgba(215, 167, 71, 0.9);
+      stroke: rgba(215, 167, 71, 0.9);
     }
-    #Layer_1 > path {
-        stroke:#fff;
+    100% {
+      fill: #d8d8d8;
+      stroke: #d8d8d8;
     }
-    .svg-map-tooltip-close {
-        visibility: hidden;
+  }
+  @keyframes navigation-line-animation {
+    0% {
+      stroke: #009d4e;
     }
-    .svg-map-tooltip-content {
-        margin-top: 0;
+    50% {
+      stroke: #b6bd00;
     }
-    svg g#shadow > * {
-        stroke: none;
-        fill: #EDEDED;
+    100% {
+      stroke: #009d4e;
     }
-    svg g#shadow > path {
-        stroke: none;
-        fill: #424242;
+  }
+  @keyframes navigation-fill-start {
+    0% {
+      fill: #7b8c94;
     }
-    .navigation-line-animation {
-        /*fill: #b62025 !important;*/
-        animation: navigation-line-animation 2s infinite;
+    50% {
+      fill: rgb(215, 167, 71);
     }
-    @keyframes navigation-fill-services {
-        0% {
-            fill: #D8D8D8;
-            stroke: #D8D8D8;
-        }
-        50% {
-            /*fill: #b62025;*/
-            fill: rgba(215, 167, 71, 0.9);
-            stroke: rgba(215, 167, 71, 0.9);
-        }
-        100% {
-            fill: #D8D8D8;
-            stroke: #D8D8D8;
-        }
+    100% {
+      fill: #7b8c94;
     }
-    @keyframes navigation-line-animation {
-        0% {
-            stroke: #009d4e;
-        }
-        50% {
-            stroke: #b6bd00;
-        }
-        100% {
-            stroke: #009d4e;
-        }
+  }
+  @keyframes navigation-fill-end {
+    0% {
+      fill: #7b8c94;
     }
-    @keyframes navigation-fill-start {
-        0% {
-            fill: #7b8c94;
-        }
-        50% {
-            fill: rgb(215, 167, 71);
-            /*fill: rgb(215, 167, 71);*/
-            /*fill: rgb(215, 167, 71);*/
-        }
-        100% {
-            fill: #7b8c94;
-        }
+    50% {
+      fill: rgb(215, 167, 71);
     }
-    @keyframes navigation-fill-end {
-        0% {
-            fill: #7b8c94;
-        }
-        50% {
-            fill: rgb(215, 167, 71);
-        }
-        100% {
-            fill: #7b8c94;
-        }
+    100% {
+      fill: #7b8c94;
     }
-    @keyframes selected-store {
-        0% {
-            fill: #7e8b93;
-        }
-        50% {
-            fill: rgb(215, 167, 71);
-        }
-        100% {
-            fill: #7e8b93;
-        }
+  }
+  @keyframes selected-store {
+    0% {
+      fill: #7e8b93;
     }
-    g#stores > * {
-        stroke: none;
-        fill: #7e8b93;
+    50% {
+      fill: rgb(215, 167, 71);
     }
-    g#stores > path {
-        fill: #dbe2e5;
+    100% {
+      fill: #7e8b93;
     }
-    svg g#services > * {
-        fill: #D8D8D8;
-    }
-    g:not(#services) .svg-map-clickable:not(g):hover, g:not(#services) g.svg-map-clickable:hover > * {
-        fill: rgb(215, 167, 71);
-    }
-    g:not(#services) .svg-map-clickable:not(g), g:not(#services) g.svg-map-clickable > * {
-        fill: #7e8b93;
-        stroke: none !important;
-    }
-    g:not(#services) .svg-map-clickable.svg-map-active:not(g), g:not(#services) g.svg-map-clickable.svg-map-active > * {
-        animation: selected-store 2s infinite;
-    }
-    .svg-map-layer {
-        background: #ffffff;
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
-        box-shadow: none;
-        border: none;
-    }
+  }
+  g#stores > * {
+    stroke: none;
+    fill: #7e8b93;
+  }
+  g#stores > path {
+    fill: #dbe2e5;
+  }
+  svg g#services > * {
+    fill: #d8d8d8;
+  }
+  g:not(#services) .svg-map-clickable:not(g):hover,
+  g:not(#services) g.svg-map-clickable:hover > * {
+    fill: rgb(215, 167, 71);
+  }
+  g:not(#services) .svg-map-clickable:not(g),
+  g:not(#services) g.svg-map-clickable > * {
+    fill: #7e8b93;
+    stroke: none !important;
+  }
+  g:not(#services) .svg-map-clickable.svg-map-active:not(g),
+  g:not(#services) g.svg-map-clickable.svg-map-active > * {
+    animation: selected-store 2s infinite;
+  }
+  .svg-map-layer {
+    background: #ffffff;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
+  }
 </style>
+
 </head>
 <body>
 <div id="wrap">
