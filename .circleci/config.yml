@@ -80,8 +80,19 @@ jobs:
           command: |
             yarn prepare
 
+  deploy:
+    executor: default
+    steps:
+      - attach_project
+      - run:
+          name: Authenticate with registry
+          command: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+      - run:
+          name: Publish package
+          command: npm run release -- --ci
+
 workflows:
-  build-and-test:
+  build-and-deploy:
     jobs:
       - install-dependencies
       - lint:
@@ -96,3 +107,13 @@ workflows:
       - build-package:
           requires:
             - install-dependencies
+      - deploy:
+          requires:
+            - install-dependencies
+            - lint
+            - typescript
+            - unit-tests
+            - build-package
+          filters:
+            branches:
+              only: master
