@@ -30,7 +30,7 @@ npm install react-native-webview
 Edit `android/app/build.gradle` ( NOT `android/build.gradle` ) and add the following:
 
 ```groovy
-apply from: "../../node_modules/react-native-mechanic-map/maps.gradle"
+apply from: "../../node_modules/react-native-mechanic-map/react.gradle"
 ```
 
 #### iOS

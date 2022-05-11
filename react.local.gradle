@@ -1,19 +1,19 @@
 /**
- * Register font asset source folder
+ * Register HTML asset source folder
  */
 android.sourceSets.main.assets.srcDirs += file("$buildDir/intermediates/ReactNativeMechanicMap")
 
 /**
- * Task to copy icon font files
+ * Task to copy HTML files
  */
 afterEvaluate {
-    def mapsDir = "../../node_modules/react-native-mechanic-map/assets";
+    def mapsDir = "../../../assets";
     def iconFontNames = [ "*.html" ];
 
     def mapCopyTask = tasks.create(
         name: "copyReactNativeMechanicMap",
         type: Copy) {
-        description = "copy mechanic map."
+        description = "copy mechanic map HTML file."
         into "$buildDir/intermediates/ReactNativeMechanicMap/assets"
 
         iconFontNames.each { mapName ->
