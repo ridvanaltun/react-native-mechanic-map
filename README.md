@@ -1,10 +1,23 @@
-# react-native-mechanic-map
+# react-native-mechanic-map <!-- omit in toc -->
 
 [![npm version](https://img.shields.io/npm/v/react-native-mechanic-map.svg)](https://npmjs.com/package/react-native-mechanic-map)
 [![CircleCI](https://circleci.com/gh/ridvanaltun/react-native-mechanic-map/tree/master.svg?style=shield)](https://circleci.com/gh/ridvanaltun/react-native-mechanic-map/tree/master)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![license](https://img.shields.io/npm/l/react-native-mechanic-map.svg)](https://github.com/ridvanaltun/react-native-mechanic-map/blob/master/LICENSE)
 
 > React Native wrapper for Mechanic Map
+
+# Table of Contents <!-- omit in toc -->
+
+- [Getting started](#getting-started)
+  - [Additional installation steps](#additional-installation-steps)
+    - [Android](#android)
+    - [iOS](#ios)
+- [Usage](#usage)
+- [Example App](#example-app)
+  - [Showcase](#showcase)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Getting started
 
@@ -127,10 +140,10 @@ npm run ios
 
 ### Showcase
 
-| Preview                                                             |
-| ------------------------------------------------------------------- |
-| <img src="./docs/example.png" alt="Preview Image" width="300px"  /> |
-| Test all features with action menu                                  |
+| Preview                                                           |
+| ----------------------------------------------------------------- |
+| <img src="docs/preview.png" alt="Preview Image" width="300px"  /> |
+| Test all features with action menu                                |
 
 ## Contributing
 
