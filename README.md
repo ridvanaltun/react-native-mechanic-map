@@ -1,7 +1,6 @@
 # react-native-mechanic-map
 
 [![npm version](https://img.shields.io/npm/v/react-native-mechanic-map.svg)](https://npmjs.com/package/react-native-mechanic-map)
-[![npm downloads](https://img.shields.io/npm/dt/react-native-mechanic-map.svg)](https://npmjs.com/package/react-native-mechanic-map)
 [![CircleCI](https://circleci.com/gh/ridvanaltun/react-native-mechanic-map/tree/master.svg?style=shield)](https://circleci.com/gh/ridvanaltun/react-native-mechanic-map/tree/master)
 [![license](https://img.shields.io/npm/l/react-native-mechanic-map.svg)](https://github.com/ridvanaltun/react-native-mechanic-map/blob/master/LICENSE)
 
@@ -104,8 +103,6 @@ mechanicMapRef?.current?.showLocation({ id, type });
 
 ## Example App
 
-<img src="./docs/example.png" alt="Preview Image" align="right" width="200px" />
-
 ```sh
 # clone the project
 git clone https://github.com/ridvanaltun/react-native-mechanic-map.git
@@ -127,6 +124,13 @@ cd ios && pod install && cd ..
 # run for ios
 npm run ios
 ```
+
+### Showcase
+
+| Preview                                                             |
+| ------------------------------------------------------------------- |
+| <img src="./docs/example.png" alt="Preview Image" width="300px"  /> |
+| Test all features with action menu                                  |
 
 ## Contributing
 
