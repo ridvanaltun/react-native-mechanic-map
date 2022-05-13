@@ -1,20 +1,22 @@
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+require_relative "../node_modules/react-native/scripts/react_native_pods"
+require_relative "../node_modules/@react-native-community/cli-platform-ios/native_modules"
 
-platform :ios, '10.0'
+platform :ios, "10.0"
 
-target 'MechanicMapExample' do
+target "MechanicMapExample" do
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])
-
-  pod 'react-native-mechanic-map', :path => '../..'
 
   # Enables Flipper.
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable these next few lines.
-  use_flipper!({ 'Flipper' => '0.80.0' })
+  use_flipper!({
+    "Flipper" => "0.134.0",
+    "Flipper-Folly" => "2.6.10",
+    "OpenSSL-Universal" => "1.1.1100",
+  })
   post_install do |installer|
     flipper_post_install(installer)
   end

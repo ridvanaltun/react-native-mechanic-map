@@ -35,6 +35,7 @@
     "commit": "git-cz"
   },
   "keywords": [
+    "kns",
     "react-native",
     "ios",
     "android"

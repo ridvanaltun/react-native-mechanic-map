@@ -45,6 +45,8 @@ Edit `android/app/build.gradle` ( NOT `android/build.gradle` ) and add the follo
 apply from: "../../node_modules/react-native-mechanic-map/react.gradle"
 ```
 
+Rebuild your app.
+
 #### iOS
 
 This module does not require any extra step.
@@ -95,7 +97,7 @@ const App = () => {
 };
 ```
 
-**Select floor:**
+**Select Floor:**
 
 ```tsx
 mechanicMapRef?.current?.setFloor(floorNo: Number) => void;
@@ -120,13 +122,13 @@ mechanicMapRef?.current?.showNavigation({
 }) => void;
 ```
 
-**Close navigation:**
+**Close Navigation:**
 
 ```tsx
 mechanicMapRef?.current?.closeNavigation(resetLevel?: Boolean) => void;
 ```
 
-**Show location:**
+**Show Location:**
 
 ```tsx
 mechanicMapRef?.current?.showLocation({
@@ -138,13 +140,13 @@ mechanicMapRef?.current?.showLocation({
 }) => void;
 ```
 
-**Hide location:**
+**Hide Location:**
 
 ```tsx
 mechanicMapRef?.current?.hideLocation() => void;
 ```
 
-**Highlight locations:**
+**Highlight Locations:**
 
 ```tsx
 mechanicMapRef?.current?.highlightLocations({
