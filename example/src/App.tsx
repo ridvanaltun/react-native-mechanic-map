@@ -20,14 +20,27 @@ const Button = ({
   text,
   onPress,
   style,
+  subButton,
+  extendableButton,
 }: {
   text: String;
   onPress: () => void;
   style?: TextStyle;
+  subButton?: Boolean;
+  extendableButton?: Boolean;
 }) => {
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Text style={[styles.buttonText, style]}>{text}</Text>
+    <TouchableOpacity onPress={onPress} style={styles.button}>
+      <Text
+        style={[
+          styles.buttonText,
+          style,
+          subButton ? styles.subButtonText : {},
+          extendableButton ? styles.extendableButton : {},
+        ]}
+      >
+        {text}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -36,6 +49,10 @@ export default function App() {
   const mechanicMapRef = React.useRef<MechanicMapHandle>(null);
 
   const [show, setShow] = React.useState(true);
+  const [floorButtons, setFloorButtons] = React.useState(false);
+  const [currLocationButtons, setCurrLocationsButtons] = React.useState(false);
+  const [navigationButtons, setNavigationButtons] = React.useState(false);
+  const [locationButtons, setLocationButtons] = React.useState(false);
 
   const locations = React.useMemo(
     () =>
@@ -43,10 +60,125 @@ export default function App() {
     []
   );
 
-  const renderButtons = () => {
+  const renderFloorButtons = () => {
     return (
-      <View>
+      <>
         <Button
+          subButton
+          text="-3. Floor"
+          onPress={() => mechanicMapRef?.current?.setFloor(-3)}
+        />
+        <Button
+          subButton
+          text="-2. Floor"
+          onPress={() => mechanicMapRef?.current?.setFloor(-2)}
+        />
+        <Button
+          subButton
+          text="-1. Floor"
+          onPress={() => mechanicMapRef?.current?.setFloor(-1)}
+        />
+        <Button
+          subButton
+          text="Ground Floor"
+          onPress={() => mechanicMapRef?.current?.setFloor(0)}
+        />
+      </>
+    );
+  };
+
+  const renderCurrentLocationButtons = () => {
+    return (
+      <>
+        <Button
+          subButton
+          text="Set"
+          onPress={() => {
+            mechanicMapRef.current?.setCurrentLocation(1000, 1000);
+          }}
+        />
+        <Button
+          subButton
+          text="Show"
+          onPress={() => {
+            mechanicMapRef.current?.showCurrentLocation();
+          }}
+        />
+        <Button
+          subButton
+          text="Move"
+          onPress={() => {
+            mechanicMapRef.current?.moveCurrentLocation([
+              {
+                x: 1200,
+                y: 1200,
+              },
+              {
+                x: 1500,
+                y: 1400,
+              },
+            ]);
+          }}
+        />
+        <Button
+          subButton
+          text="Remove"
+          onPress={() => {
+            mechanicMapRef.current?.removeCurrentLocation();
+          }}
+        />
+      </>
+    );
+  };
+
+  const renderNavigationButtons = () => {
+    return (
+      <>
+        <Button
+          subButton
+          text="Starbucks to Adidas"
+          onPress={() => {
+            mechanicMapRef?.current?.showNavigation(
+              ExampleRoutes.STARBUCKS_TO_ADIDAS
+            );
+          }}
+        />
+        <Button
+          subButton
+          text="Adidas to Avelieer"
+          onPress={() => {
+            mechanicMapRef?.current?.showNavigation(
+              ExampleRoutes.ADIDAS_TO_AVELIEER
+            );
+          }}
+        />
+        <Button
+          text="Close"
+          onPress={() => mechanicMapRef?.current?.closeNavigation()}
+        />
+      </>
+    );
+  };
+
+  const renderLocationButtons = () => {
+    return (
+      <>
+        <Button
+          subButton
+          text="Highlight Some Stores"
+          onPress={() => {
+            const groundFloorStores = locations
+              .filter((l) => l.type === 'store')
+              .filter((l) => l.id[0] === 'K' && l.id[1] === '0')
+              .map((l) => l.id);
+
+            mechanicMapRef.current?.highlightLocations(groundFloorStores, {
+              type: LocationTypes.STORE,
+            });
+          }}
+        />
+        <Button
+          subButton
           text="Random Place"
           onPress={() => {
             const randomLocation =
@@ -61,41 +193,42 @@ export default function App() {
           }}
         />
         <Button
-          text="Starbucks to Adidas"
+          text="Hide"
           onPress={() => {
-            mechanicMapRef?.current?.showNavigation({
-              route: ExampleRoutes.STARBUCKS_TO_ADIDAS,
-            });
+            mechanicMapRef.current?.hideLocation();
           }}
         />
+      </>
+    );
+  };
+
+  const renderButtons = () => {
+    return (
+      <View>
         <Button
-          text="Adidas to Avelieer"
-          onPress={() => {
-            mechanicMapRef?.current?.showNavigation({
-              route: ExampleRoutes.ADIDAS_TO_AVELIEER,
-            });
-          }}
+          extendableButton
+          text="Current Location"
+          onPress={() => setCurrLocationsButtons(!currLocationButtons)}
         />
+        {currLocationButtons && renderCurrentLocationButtons()}
         <Button
-          text="Close Navigation"
-          onPress={() => mechanicMapRef?.current?.closeNavigation()}
+          extendableButton
+          text="Location"
+          onPress={() => setLocationButtons(!locationButtons)}
         />
+        {locationButtons && renderLocationButtons()}
         <Button
-          text="-3. Floor"
-          onPress={() => mechanicMapRef?.current?.setFloor(-3)}
+          extendableButton
+          text="Navigation"
+          onPress={() => setNavigationButtons(!navigationButtons)}
         />
+        {navigationButtons && renderNavigationButtons()}
         <Button
-          text="-2. Floor"
-          onPress={() => mechanicMapRef?.current?.setFloor(-2)}
+          extendableButton
+          text="Floors"
+          onPress={() => setFloorButtons(!floorButtons)}
         />
-        <Button
-          text="-1. Floor"
-          onPress={() => mechanicMapRef?.current?.setFloor(-1)}
-        />
-        <Button
-          text="Ground Floor"
-          onPress={() => mechanicMapRef?.current?.setFloor(0)}
-        />
+        {floorButtons && renderFloorButtons()}
         <Button
           text="Reload"
           onPress={() => mechanicMapRef?.current?.reload()}
@@ -112,10 +245,10 @@ export default function App() {
         payload={Payload}
         style={styles.container}
         onMapLoaded={() => {
-          console.log('map loaded!');
+          console.log('onMapLoaded => map loaded!');
         }}
         onLevelSwitched={(newLevel) => {
-          console.log(`newLevel is ${newLevel}`);
+          console.log(`onLevelSwitched => newLevel is ${newLevel}`);
         }}
         options={{
           rotate: 90,
@@ -136,7 +269,16 @@ export default function App() {
           },
         }}
         onLocationOpened={(target) => {
-          console.log(`target is ${target}`);
+          console.log(`onLocationOpened => target is ${target}`);
+        }}
+        onLocationClosed={() => {
+          console.log('onLocationClosed => location closed');
+        }}
+        onNavigationCancalled={() => {
+          console.log('onNavigationCancalled => navigation cancelled');
+        }}
+        onLocationHighlighted={() => {
+          console.log('onLocationHighlighted => location highlighted');
         }}
       />
       <View style={styles.actions}>
@@ -163,12 +305,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     marginRight: 20,
-    // marginBottom: 10,
+  },
+  button: {
+    alignSelf: 'flex-end',
   },
   buttonText: {
     textAlign: 'right',
-    marginBottom: 20,
-    fontSize: 17,
+    marginBottom: 15,
+    fontSize: 12,
     fontWeight: 'bold',
+  },
+  subButtonText: {
+    color: 'gray',
+  },
+  extendableButton: {
+    color: 'orange',
   },
 });

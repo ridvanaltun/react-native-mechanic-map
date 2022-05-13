@@ -25,6 +25,12 @@ export enum MapActions {
   CLOSE_NAVIGATION = 'closeNavigation',
   SHOW_LOCATION = 'selectLocation',
   SET_FLOOR = 'selectFloor',
+  HIGHLIGHT_LOCATIONS = 'highlightLocations',
+  HIDE_LOCATION = 'hideLocation',
+  SET_CURRENT_LOCATION = 'setCurrentLocation',
+  SHOW_CURRENT_LOCATION = 'showCurrentLocation',
+  MOVE_CURRENT_LOCATION = 'moveCurrentLocation',
+  REMOVE_CURRENT_LOCATION = 'removeCurrentLocation',
   RELOAD = 'reload',
 }
 
@@ -33,6 +39,8 @@ export enum MapResponses {
   LOCATION_OPENED = 'locationOpened',
   LOCATION_CLOSED = 'locationClosed',
   LEVEL_SWITCHED = 'levelSwitched',
+  LOCATION_HIGHLIGHTED = 'locationsHighlighted',
+  NAVIGATION_CANCELLED = 'navigationCancelled',
 }
 
 interface EventPayload {
@@ -108,9 +116,6 @@ interface MechanicMapOptions {
     width?: Number;
     color?: String;
   };
-  helperTexts?: {
-    youAreHere: String;
-  };
   mapFill?: Boolean;
   tooltip?: {
     enabled: Boolean;
@@ -146,7 +151,10 @@ interface MechanicMapProps extends InitParams, WebViewProps {
   onEvent?: (event: EventPayload) => void;
   onLevelSwitched?: (newLevel: String) => void;
   onLocationOpened?: (location: Location) => void;
+  onLocationClosed?: () => void;
   onMapLoaded?: () => void;
+  onNavigationCancalled?: () => void;
+  onLocationHighlighted?: () => void;
 }
 
 export interface Route {
@@ -168,32 +176,49 @@ export interface Route {
   };
 }
 
-interface ShowNavigationParams {
-  route: Route;
-  autoMode?: Boolean;
-  zoomEnabled?: Boolean;
-  showPins?: Boolean;
-}
-
-interface ShowLocationParams {
-  id: String;
-  type: LocationTypes;
-  duration?: Boolean;
-  closeNavigation?: Boolean;
-  moveAndZoom?: Boolean;
-}
-
 export type MechanicMapHandle = {
   postMessage: (params: PostMessagePayload) => void;
   init: (params: InitParams) => void;
-  showLocation: (params: ShowLocationParams) => void;
-  closeNavigation: (resetLevel?: boolean) => void;
-  showNavigation: (params: ShowNavigationParams) => void;
+  showLocation: (params: {
+    id: String;
+    type: LocationTypes;
+    duration?: Boolean;
+    closeNavigation?: Boolean;
+    moveAndZoom?: Boolean;
+  }) => void;
+  closeNavigation: (resetLevel?: Boolean) => void;
+  showNavigation: (
+    route: Route,
+    options?: {
+      autoMode?: Boolean;
+      zoomEnabled?: Boolean;
+      showPins?: Boolean;
+    }
+  ) => void;
   setFloor: (
     floorNo: Number,
-    resetZoom?: boolean,
-    hideLocation?: boolean
+    options?: { resetZoom?: Boolean; hideLocation?: Boolean }
   ) => void;
+  highlightLocations: (
+    ids: Array<String>,
+    options?: {
+      type?: LocationTypes;
+      zoomEnabled?: Boolean;
+      duration?: Number;
+    }
+  ) => void;
+  hideLocation: () => void;
+  setCurrentLocation: (
+    x: Number,
+    y: Number,
+    options?: { floorNo?: Number }
+  ) => void;
+  showCurrentLocation: () => void;
+  moveCurrentLocation: (
+    coords: Array<{ x: Number; y: Number }>,
+    options?: { floorNo?: Number }
+  ) => void;
+  removeCurrentLocation: () => void;
   reload: () => void;
 };
 
@@ -207,7 +232,10 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
       onEvent,
       onLevelSwitched,
       onLocationOpened,
+      onLocationClosed,
       onMapLoaded,
+      onNavigationCancalled,
+      onLocationHighlighted,
       ...props
     },
     ref
@@ -259,30 +287,74 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           },
         });
       },
-      showNavigation({
-        route,
-        autoMode = true,
-        zoomEnabled = true,
-        showPins = true,
-      }) {
+      showNavigation(route, params) {
         postMessage({
           action: MapActions.SHOW_NAVIGATION,
           payload: {
             route,
-            autoMode,
-            zoomEnabled,
-            showPins,
+            autoMode: params?.autoMode === undefined ? true : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
           },
         });
       },
-      setFloor(floorNo, resetZoom = true, hideLocation = true) {
+      setFloor(floorNo, params) {
         postMessage({
           action: MapActions.SET_FLOOR,
           payload: {
             floorNo,
-            resetZoom,
-            hideLocation,
+            resetZoom:
+              params?.resetZoom === undefined ? true : params.resetZoom,
+            hideLocation:
+              params?.hideLocation === undefined ? true : params.hideLocation,
           },
+        });
+      },
+      highlightLocations(ids, params) {
+        postMessage({
+          action: MapActions.HIGHLIGHT_LOCATIONS,
+          payload: {
+            ids,
+            type:
+              params?.type === undefined ? LocationTypes.STORE : params.type,
+            zoomEnabled: params?.zoomEnabled,
+            duration: params?.duration,
+          },
+        });
+      },
+      hideLocation() {
+        postMessage({
+          action: MapActions.HIDE_LOCATION,
+        });
+      },
+      setCurrentLocation(x, y, floorNo) {
+        postMessage({
+          action: MapActions.SET_CURRENT_LOCATION,
+          payload: {
+            x,
+            y,
+            floorNo,
+          },
+        });
+      },
+      showCurrentLocation() {
+        postMessage({
+          action: MapActions.SHOW_CURRENT_LOCATION,
+        });
+      },
+      moveCurrentLocation(coords, params) {
+        postMessage({
+          action: MapActions.MOVE_CURRENT_LOCATION,
+          payload: {
+            coords,
+            floorNo: params?.floorNo,
+          },
+        });
+      },
+      removeCurrentLocation() {
+        postMessage({
+          action: MapActions.REMOVE_CURRENT_LOCATION,
         });
       },
       reload() {
@@ -319,8 +391,26 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
             onLocationOpened(data);
           }
 
+          if (action === MapResponses.LOCATION_CLOSED && onLocationClosed) {
+            onLocationClosed();
+          }
+
           if (action === MapResponses.LEVEL_SWITCHED && onLevelSwitched) {
             onLevelSwitched(data); // new floor no
+          }
+
+          if (
+            action === MapResponses.NAVIGATION_CANCELLED &&
+            onNavigationCancalled
+          ) {
+            onNavigationCancalled();
+          }
+
+          if (
+            action === MapResponses.LOCATION_HIGHLIGHTED &&
+            onLocationHighlighted
+          ) {
+            onLocationHighlighted();
           }
         }}
         onLoadEnd={() => {

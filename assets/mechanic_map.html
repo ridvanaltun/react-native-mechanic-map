@@ -4683,16 +4683,32 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
         });
 
         $mapContainer.on('levelSwitched', (event, levelId, levelNo) => {
-          rnPostMessage({ action: 'levelSwitched', data: levelNo });
+          rnPostMessage({ action: 'levelSwitched', data: {id: levelId, no: levelNo} });
         });
 
         $mapContainer.on('locationOpened', (event, location) => {
           rnPostMessage({ action: 'locationOpened', data: location });
         });
+
         $mapContainer.on('serviceLocationOpened', (event, location) => {
           rnPostMessage({ action: 'locationOpened', data: location });
         });
-        $mapContainer.on('locationClosed', () => {});
+
+        $mapContainer.on('locationClosed', () => {
+          rnPostMessage({ action: 'locationClosed' });
+        });
+
+        $mapContainer.on('locationsHighlighted', () => {
+          rnPostMessage({ action: 'locationsHighlighted' });
+        });
+
+        $mapContainer.on('serviceLocationsHighlighted', () => {
+          rnPostMessage({ action: 'locationsHighlighted' });
+        });
+
+        $mapContainer.on('navigationCancelled', () => {
+          rnPostMessage({ action: 'navigationCancelled' });
+        });
       }
 
       function selectFloor(payload) {
@@ -4700,15 +4716,6 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
           payload.floorNo,
           payload.resetZoom,
           payload.hideLocation
-        );
-      }
-
-      function showNavigation(payload) {
-        mechanicMap.showNavigation(
-          payload.route,
-          payload.autoMode,
-          payload.zoomEnabled,
-          payload.showPins
         );
       }
 
@@ -4721,28 +4728,72 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
             payload.moveAndZoom
           );
         } else {
-          mechanicMap.showServiceLocation(payload.locationId, true);
+          mechanicMap.showServiceLocation(
+            payload.locationId,
+            payload.duration,
+            payload.closeNavigation
+          );
         }
       }
 
-      function closeLocation(payload) {
-        mechanicMap.closeNavigation(payload.resetLevel);
-      }
-
-      function selectUserLocation(location) {
-        mechanicMap.setCurrentMobileUserLocation(
-          location.coordinate.x,
-          location.coordinate.y,
-          location.coordinate.z
+      function showNavigation(payload) {
+        mechanicMap.showNavigation(
+          payload.route,
+          payload.autoMode,
+          payload.zoomEnabled,
+          payload.showPins
         );
       }
 
-      function showBeaconLocation() {
+      function closeNavigation(payload) {
+        mechanicMap.closeNavigation(payload.resetLevel);
+      }
+
+      function highlightLocations(payload) {
+        if (payload.type === 'store') {
+          mechanicMap.highlightLocations(
+            payload.ids,
+            payload.zoomEnabled,
+            payload.duration
+          );
+        } else {
+          mechanicMap.highlightServiceLocations(
+            payload.ids,
+            payload.zoomEnabled,
+            payload.duration
+          );
+        }
+      }
+
+      function hideLocation() {
+        mechanicMap.hideLocation();
+      }
+
+      function setCurrentLocation(payload) {
+        mechanicMap.setCurrentMobileUserLocation(
+          payload.x,
+          payload.y,
+          payload.floorNo
+        );
+      }
+
+      function showCurrentLocation() {
         mechanicMap.showCurrentMobileUserLocation();
       }
 
-      function resetBeaconLocation() {
+      function moveCurrentLocation(payload) {
+        mechanicMap.moveCurrentMobileUserLocation(
+          payload.coords,
+          payload.floorNumber
+        );
+      }
+
+      function removeCurrentLocation() {
         mechanicMap.resetCurrentMobileUserLocation();
+      }
+
+      function updateLocale(payload) {
+        mechanicMap.updateLocalized(payload);
       }
 
       const onMessage = (e) => {
@@ -4755,26 +4806,38 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
           case 'selectFloor':
             selectFloor(message.payload);
             break;
-          case 'showNavigation':
-            showNavigation(message.payload);
-            break;
           case 'selectLocation':
             selectLocation(message.payload);
             break;
+          case 'showNavigation':
+            showNavigation(message.payload);
+            break;
           case 'closeNavigation':
-            closeLocation(message.payload);
+            closeNavigation(message.payload);
+            break;
+          case 'highlightLocations':
+            highlightLocations(message.payload);
+            break;
+          case 'hideLocation':
+            hideLocation();
+            break;
+          case 'setCurrentLocation':
+            setCurrentLocation(message.payload);
+            break;
+          case 'showCurrentLocation':
+            showCurrentLocation();
+            break;
+          case 'moveCurrentLocation':
+            moveCurrentLocation(message.payload);
+            break;
+          case 'removeCurrentLocation':
+            removeCurrentLocation();
+            break;
+          case 'updateLocale':
+            updateLocale(message.payload);
             break;
           case 'reload':
             location.reload();
-            break;
-          case 'visitedBeacon':
-            selectUserLocation(message.payload);
-            break;
-          case 'showBeaconLocation':
-            showBeaconLocation();
-            break;
-          case 'resetBeaconLocation':
-            resetBeaconLocation();
             break;
           default:
             break;

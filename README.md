@@ -51,14 +51,14 @@ This module does not require any extra step.
 
 ## Usage
 
-```js
+```tsx
 import * as React from 'react';
-import MechanicMap from 'react-native-mechanic-map';
+import MechanicMap, { MechanicMapHandle } from 'react-native-mechanic-map';
 
 // ..
 
 const App = () => {
-  const mechanicMapRef = React.useRef(null);
+  const mechanicMapRef = React.useRef<MechanicMapHandle>(null);
 
   return (
     <MechanicMap
@@ -79,39 +79,115 @@ const App = () => {
       onLocationOpened={(target) => {
         // executes when any location opened
       }}
+      onLocationClosed={() => {
+        // executes when any location closed
+      }}
+      onNavigationCancalled={() => {
+        // executes when navigation cancalled
+      }}
+      onLocationHighlighted={(target) => {
+        // executes when location highlighted
+      }}
     />
   );
 };
 ```
 
-Select floor:
+**Select floor:**
 
-```js
-mechanicMapRef?.current?.setFloor(floorNo);
+```tsx
+mechanicMapRef?.current?.setFloor(floorNo: Number) => void;
 ```
 
-Reload:
+**Reload:**
 
-```js
-mechanicMapRef?.current?.reload();
+```tsx
+mechanicMapRef?.current?.reload() => void;
 ```
 
-Show navigation:
+**Navigation:**
 
-```js
-mechanicMapRef?.current?.showNavigation({ route });
+```tsx
+mechanicMapRef?.current?.showNavigation({
+  route: Route,
+  options?: {
+    autoMode?: Boolean,
+    zoomEnabled?: Boolean,
+    showPins?: Boolean,
+  }
+}) => void;
 ```
 
-Close navigation:
+**Close navigation:**
 
-```js
-mechanicMapRef?.current?.closeNavigation();
+```tsx
+mechanicMapRef?.current?.closeNavigation(resetLevel?: Boolean) => void;
 ```
 
-Show location:
+**Show location:**
 
-```js
-mechanicMapRef?.current?.showLocation({ id, type });
+```tsx
+mechanicMapRef?.current?.showLocation({
+  id: String,
+  type: LocationTypes,
+  duration?: Boolean,
+  closeNavigation?: Boolean,
+  moveAndZoom?: Boolean,
+}) => void;
+```
+
+**Hide location:**
+
+```tsx
+mechanicMapRef?.current?.hideLocation() => void;
+```
+
+**Highlight locations:**
+
+```tsx
+mechanicMapRef?.current?.highlightLocations({
+  ids: Array<String>,
+  options?: {
+    type?: LocationTypes,
+    zoomEnabled?: Boolean,
+    duration?: Number,
+  }
+}) => void;
+```
+
+**Show Pin on Map:**
+
+```tsx
+mechanicMapRef.current?.setCurrentLocation({
+  x: Number,
+  y: Number,
+  options?: {
+    floorNo?: Number,
+  }
+}) => void;
+```
+
+**Focus to Pin:**
+
+```tsx
+mechanicMapRef.current?.showCurrentLocation() => void;
+```
+
+**Move Pin:**
+
+```tsx
+mechanicMapRef.current?.moveCurrentLocation({
+  coords: Array<{ x: Number; y: Number }>,
+  options?: {
+    floorNo?: Number,
+  }
+}) => void;
+```
+
+**Remove Pin:**
+
+```tsx
+mechanicMapRef.current?.removeCurrentLocation() => void;
 ```
 
 ## Example App
