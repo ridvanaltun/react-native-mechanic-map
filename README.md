@@ -69,7 +69,6 @@ const App = () => {
         rotate: 90,
         initialScaleFactor: 1.25,
       }}
-      style={styles.container}
       onMapLoaded={() => {
         // execute when map loaded
       }}
@@ -87,6 +86,9 @@ const App = () => {
       }}
       onLocationHighlighted={(target) => {
         // executes when location highlighted
+      }}
+      onMapError={(data) => {
+        // executes when occours error on mechanic map
       }}
     />
   );

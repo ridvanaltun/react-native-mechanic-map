@@ -280,6 +280,9 @@ export default function App() {
         onLocationHighlighted={() => {
           console.log('onLocationHighlighted => location highlighted');
         }}
+        onMapError={(data) => {
+          console.log(`onMapError => ${JSON.stringify(data)}`);
+        }}
       />
       <View style={styles.actions}>
         {show && renderButtons()}

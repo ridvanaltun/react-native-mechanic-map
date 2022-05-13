@@ -41,6 +41,7 @@ export enum MapResponses {
   LEVEL_SWITCHED = 'levelSwitched',
   LOCATION_HIGHLIGHTED = 'locationsHighlighted',
   NAVIGATION_CANCELLED = 'navigationCancelled',
+  ERROR = 'error',
 }
 
 interface EventPayload {
@@ -155,6 +156,13 @@ interface MechanicMapProps extends InitParams, WebViewProps {
   onMapLoaded?: () => void;
   onNavigationCancalled?: () => void;
   onLocationHighlighted?: () => void;
+  onMapError?: (data: {
+    message: String;
+    source: String;
+    lineno: Number;
+    colno: Number;
+    error: String;
+  }) => void;
 }
 
 export interface Route {
@@ -236,6 +244,7 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
       onMapLoaded,
       onNavigationCancalled,
       onLocationHighlighted,
+      onMapError,
       ...props
     },
     ref
@@ -411,6 +420,10 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
             onLocationHighlighted
           ) {
             onLocationHighlighted();
+          }
+
+          if (action === MapResponses.ERROR && onMapError) {
+            onMapError(data);
           }
         }}
         onLoadEnd={() => {
