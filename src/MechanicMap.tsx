@@ -149,6 +149,53 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           action: MapActions.REMOVE_CURRENT_LOCATION,
         });
       },
+      zoomIn() {
+        postMessage({
+          action: MapActions.ZOOM_IN,
+        });
+      },
+      zoomOut() {
+        postMessage({
+          action: MapActions.ZOOM_OUT,
+        });
+      },
+      moveTo(x, y, params) {
+        postMessage({
+          action: MapActions.MOVE_TO,
+          payload: {
+            x,
+            y,
+            scale: params?.scale,
+            duration: params?.duration,
+            easing: params?.easing,
+          },
+        });
+      },
+      zoomTo(x, y, params) {
+        postMessage({
+          action: MapActions.ZOOM_TO,
+          payload: {
+            x,
+            y,
+            scale: params?.scale,
+            duration: params?.duration,
+            easing: params?.easing,
+          },
+        });
+      },
+      addLevel(level) {
+        postMessage({
+          action: MapActions.ADD_LEVEL,
+          payload: {
+            level,
+          },
+        });
+      },
+      resetLevel() {
+        postMessage({
+          action: MapActions.RESET_LEVEL,
+        });
+      },
       reload() {
         postMessage({
           action: MapActions.RELOAD,

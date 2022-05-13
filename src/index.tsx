@@ -26,6 +26,12 @@ export enum MapActions {
   SHOW_CURRENT_LOCATION = 'showCurrentLocation',
   MOVE_CURRENT_LOCATION = 'moveCurrentLocation',
   REMOVE_CURRENT_LOCATION = 'removeCurrentLocation',
+  ZOOM_IN = 'zoomIn',
+  ZOOM_OUT = 'zoomOut',
+  ADD_LEVEL = 'addLevel',
+  RESET_LEVEL = 'resetLevel',
+  MOVE_TO = 'moveTo',
+  ZOOM_TO = 'zoomTo',
   RELOAD = 'reload',
 }
 
@@ -222,6 +228,28 @@ export type MechanicMapHandle = {
     options?: { floorNo?: Number }
   ) => void;
   removeCurrentLocation: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  moveTo: (
+    x: Number,
+    y: Number,
+    options?: {
+      scale?: Number;
+      duration?: Number;
+      easing?: String; // todo @ add enum
+    }
+  ) => void;
+  zoomTo: (
+    x: Number,
+    y: Number,
+    options?: {
+      scale?: Number;
+      duration?: Number;
+      easing?: String; // todo @ add enum
+    }
+  ) => void;
+  addLevel: (level: MechanicMapPayload) => void;
+  resetLevel: () => void;
   reload: () => void;
 };
 

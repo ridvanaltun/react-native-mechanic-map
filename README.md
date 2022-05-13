@@ -112,13 +112,14 @@ mechanicMapRef?.current?.reload() => void;
 **Navigation:**
 
 ```tsx
-mechanicMapRef?.current?.showNavigation({
+import type {Route} from 'react-native-mechanic-map'
+
+mechanicMapRef?.current?.showNavigation(
   route: Route,
   options?: {
     autoMode?: Boolean,
     zoomEnabled?: Boolean,
     showPins?: Boolean,
-  }
 }) => void;
 ```
 
@@ -131,6 +132,8 @@ mechanicMapRef?.current?.closeNavigation(resetLevel?: Boolean) => void;
 **Show Location:**
 
 ```tsx
+import type {LocationTypes} from 'react-native-mechanic-map'
+
 mechanicMapRef?.current?.showLocation({
   id: String,
   type: LocationTypes,
@@ -149,25 +152,25 @@ mechanicMapRef?.current?.hideLocation() => void;
 **Highlight Locations:**
 
 ```tsx
-mechanicMapRef?.current?.highlightLocations({
+import type {LocationTypes} from 'react-native-mechanic-map'
+
+mechanicMapRef?.current?.highlightLocations(
   ids: Array<String>,
   options?: {
     type?: LocationTypes,
     zoomEnabled?: Boolean,
     duration?: Number,
-  }
 }) => void;
 ```
 
 **Show Pin on Map:**
 
 ```tsx
-mechanicMapRef.current?.setCurrentLocation({
+mechanicMapRef.current?.setCurrentLocation(
   x: Number,
   y: Number,
   options?: {
     floorNo?: Number,
-  }
 }) => void;
 ```
 
@@ -180,18 +183,70 @@ mechanicMapRef.current?.showCurrentLocation() => void;
 **Move Pin:**
 
 ```tsx
-mechanicMapRef.current?.moveCurrentLocation({
+mechanicMapRef.current?.moveCurrentLocation(
   coords: Array<{ x: Number; y: Number }>,
   options?: {
     floorNo?: Number,
   }
-}) => void;
+) => void;
 ```
 
 **Remove Pin:**
 
 ```tsx
 mechanicMapRef.current?.removeCurrentLocation() => void;
+```
+
+**Zoom In:**
+
+```tsx
+mechanicMapRef.current?.zoomIn() => void;
+```
+
+**Zoom Out:**
+
+```tsx
+mechanicMapRef.current?.zoomOut() => void;
+```
+
+**Zoom To:**
+
+```tsx
+mechanicMapRef.current?.zoomTo(
+  x: Number,
+  y: Number,
+  options?: {
+    scale?: Number;
+    duration?: Number;
+    easing?: String;
+}) => void;
+```
+
+**Move To:**
+
+```tsx
+mechanicMapRef.current?.zoomTo(
+  x: Number,
+  y: Number,
+  options?: {
+    scale?: Number;
+    duration?: Number;
+    easing?: String;
+}) => void;
+```
+
+**Add Level:**
+
+```tsx
+import type {MechanicMapPayload} from 'react-native-mechanic-map'
+
+mechanicMapRef.current?.addLevel(level: MechanicMapPayload) => void;
+```
+
+**Reset Level:**
+
+```tsx
+mechanicMapRef.current?.resetLevel() => void;
 ```
 
 ## Example App

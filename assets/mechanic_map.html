@@ -4792,8 +4792,40 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
         mechanicMap.resetCurrentMobileUserLocation();
       }
 
-      function updateLocale(payload) {
-        mechanicMap.updateLocalized(payload);
+      function zoomIn() {
+        mechanicMap.zoomIn();
+      }
+
+      function zoomOut() {
+        mechanicMap.zoomOut();
+      }
+
+      function moveTo(payload) {
+        mechanicMap.mto(
+          payload.x,
+          payload.y,
+          payload.scale,
+          payload.duration,
+          payload.easing,
+        );
+      }
+
+      function zoomTo(payload) {
+        mechanicMap.zto(
+          payload.x,
+          payload.y,
+          payload.scale,
+          payload.duration,
+          payload.easing,
+        );
+      }
+
+      function addLevel(payload) {
+        mechanicMap.addLevel(payload.level);
+      }
+
+      function resetLevel() {
+        mechanicMap.resetLevel();
       }
 
       const onMessage = (e) => {
@@ -4833,8 +4865,23 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
           case 'removeCurrentLocation':
             removeCurrentLocation();
             break;
-          case 'updateLocale':
-            updateLocale(message.payload);
+          case 'zoomIn':
+            zoomIn();
+            break;
+          case 'zoomOut':
+            zoomOut();
+            break;
+          case 'addLevel':
+            addLevel(message.payload);
+            break;
+          case 'resetLevel':
+            resetLevel();
+            break;
+          case 'moveTo':
+            moveTo(message.payload);
+            break;
+          case 'zoomTo':
+            zoomTo(message.payload);
             break;
           case 'reload':
             location.reload();

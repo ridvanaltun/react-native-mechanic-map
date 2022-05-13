@@ -230,6 +230,18 @@ export default function App() {
         />
         {floorButtons && renderFloorButtons()}
         <Button
+          text="Zoom In"
+          onPress={() => mechanicMapRef?.current?.zoomIn()}
+        />
+        <Button
+          text="Zoom Out"
+          onPress={() => mechanicMapRef?.current?.zoomOut()}
+        />
+        <Button
+          text="Reset Level"
+          onPress={() => mechanicMapRef?.current?.resetLevel()}
+        />
+        <Button
           text="Reload"
           onPress={() => mechanicMapRef?.current?.reload()}
         />
