@@ -141,7 +141,8 @@
   },
   "eslintIgnore": [
     "node_modules/",
-    "lib/"
+    "lib/",
+    "assets/mechanic_map.html"
   ],
   "prettier": {
     "quoteProps": "consistent",
