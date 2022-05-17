@@ -256,12 +256,6 @@ export default function App() {
         languageCode="en"
         payload={Payload}
         style={styles.container}
-        onMapLoaded={() => {
-          console.log('onMapLoaded => map loaded!');
-        }}
-        onLevelSwitched={(newLevel) => {
-          console.log(`onLevelSwitched => newLevel is ${newLevel}`);
-        }}
         options={{
           rotate: 90,
           initialScaleFactor: 1.25,
@@ -279,6 +273,12 @@ export default function App() {
             speedFactor: 8,
             // stackAnimation: true,
           },
+        }}
+        onMapLoaded={() => {
+          console.log('onMapLoaded => map loaded!');
+        }}
+        onLevelSwitched={(newLevel) => {
+          console.log(`onLevelSwitched => new level is ${newLevel.no}`);
         }}
         onLocationOpened={(target) => {
           console.log(`onLocationOpened => target is ${target}`);

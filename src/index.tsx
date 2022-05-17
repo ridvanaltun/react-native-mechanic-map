@@ -151,7 +151,7 @@ interface InitParams {
 export interface MechanicMapProps extends InitParams, WebViewProps {
   disableAutoInit?: Boolean;
   onEvent?: (event: EventPayload) => void;
-  onLevelSwitched?: (newLevel: String) => void;
+  onLevelSwitched?: (newLevel: { id: String; no: Number }) => void;
   onLocationOpened?: (location: Location) => void;
   onLocationClosed?: () => void;
   onMapLoaded?: () => void;
