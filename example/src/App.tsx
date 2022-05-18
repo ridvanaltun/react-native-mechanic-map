@@ -13,6 +13,8 @@ import MechanicMap, {
   MapAnimationModes,
 } from 'react-native-mechanic-map';
 
+import Utils from './utils';
+
 import Payload from './Payload';
 import ExampleRoutes from './ExampleRoutes';
 
@@ -53,6 +55,7 @@ export default function App() {
   const [currLocationButtons, setCurrLocationsButtons] = React.useState(false);
   const [navigationButtons, setNavigationButtons] = React.useState(false);
   const [locationButtons, setLocationButtons] = React.useState(false);
+  const [colorButtons, setColorButtons] = React.useState(false);
 
   const locations = React.useMemo(
     () =>
@@ -82,6 +85,65 @@ export default function App() {
           subButton
           text="Ground Floor"
           onPress={() => mechanicMapRef?.current?.setFloor(0)}
+        />
+      </>
+    );
+  };
+
+  const renderColorButtons = () => {
+    return (
+      <>
+        <Button
+          subButton
+          text="Random Background"
+          onPress={() =>
+            mechanicMapRef?.current?.changeColors({
+              background: Utils.randomColor(),
+            })
+          }
+        />
+        <Button
+          subButton
+          text="Random Location"
+          onPress={() =>
+            mechanicMapRef?.current?.changeColors({
+              locations: locations.reduce((previousValue, currentValue) => {
+                return {
+                  ...previousValue,
+                  // @ts-ignore
+                  // @todo
+                  [currentValue.id]: Utils.randomColor(),
+                };
+              }, {}),
+            })
+          }
+        />
+        <Button
+          subButton
+          text="Random Active Store"
+          onPress={() =>
+            mechanicMapRef?.current?.changeColors({
+              activeStores: Utils.randomColor(),
+            })
+          }
+        />
+        <Button
+          subButton
+          text="Random Inactive Store"
+          onPress={() =>
+            mechanicMapRef?.current?.changeColors({
+              inactiveStores: Utils.randomColor(),
+            })
+          }
+        />
+        <Button
+          subButton
+          text="Random Service"
+          onPress={() =>
+            mechanicMapRef?.current?.changeColors({
+              services: Utils.randomColor(),
+            })
+          }
         />
       </>
     );
@@ -230,6 +292,12 @@ export default function App() {
         />
         {floorButtons && renderFloorButtons()}
         <Button
+          extendableButton
+          text="Colors"
+          onPress={() => setColorButtons(!colorButtons)}
+        />
+        {colorButtons && renderColorButtons()}
+        <Button
           text="Zoom In"
           onPress={() => mechanicMapRef?.current?.zoomIn()}
         />
@@ -273,6 +341,16 @@ export default function App() {
             speedFactor: 8,
             // stackAnimation: true,
           },
+          // colors: {
+          //   activeStores: Utils.randomColor(),
+          //   inactiveStores: Utils.randomColor(),
+          //   services: Utils.randomColor(),
+          //   background: Utils.randomColor(),
+          //   locations: {
+          //     [Payload[0].locations[0].id]: Utils.randomColor(),
+          //     [Payload[0].locations[1].id]: Utils.randomColor(),
+          //   },
+          // },
         }}
         onMapLoaded={() => {
           console.log('onMapLoaded => map loaded!');

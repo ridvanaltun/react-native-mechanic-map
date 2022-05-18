@@ -10,7 +10,7 @@
 # Table of Contents <!-- omit in toc -->
 
 - [Getting started](#getting-started)
-  - [Additional installation steps](#additional-installation-steps)
+  - [Other Required Steps](#other-required-steps)
     - [Android](#android)
     - [iOS](#ios)
 - [Usage](#usage)
@@ -35,7 +35,7 @@ npm install react-native-webview
 
 > **_Check [react-native-webview](https://github.com/react-native-webview/react-native-webview) installation guide._**
 
-### Additional installation steps
+### Other Required Steps
 
 #### Android
 
@@ -101,12 +101,6 @@ const App = () => {
 
 ```tsx
 mechanicMapRef?.current?.setFloor(floorNo: Number) => void;
-```
-
-**Reload:**
-
-```tsx
-mechanicMapRef?.current?.reload() => void;
 ```
 
 **Navigation:**
@@ -247,6 +241,27 @@ mechanicMapRef.current?.addLevel(level: MechanicMapPayload) => void;
 
 ```tsx
 mechanicMapRef.current?.resetLevel() => void;
+```
+
+**Change Colors:**
+
+```tsx
+import type {Color} from 'react-native-mechanic-map'
+
+mechanicMapRef.current?.changeColors({
+  activeStores?: Color;
+  inactiveStores?: Color;
+  services?: Color;
+  background?: Color;
+  locations?: {
+    [key: string]: Color;
+}) => void;
+```
+
+**Reload:**
+
+```tsx
+mechanicMapRef?.current?.reload() => void;
 ```
 
 ## Example App

@@ -2,6 +2,15 @@ import type { WebViewProps } from 'react-native-webview';
 
 import MechanicMap from './MechanicMap';
 
+type LocationId = String;
+type LevelId = String;
+
+type RGB = `rgb(${number}, ${number}, ${number})`;
+type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
+type HEX = `#${string}`;
+
+export type Color = RGB | RGBA | HEX;
+
 export enum LocationTypes {
   STORE = 'store',
   SERVICE = 'service',
@@ -32,6 +41,7 @@ export enum MapActions {
   RESET_LEVEL = 'resetLevel',
   MOVE_TO = 'moveTo',
   ZOOM_TO = 'zoomTo',
+  CHANGE_COLORS = 'changeColors',
   RELOAD = 'reload',
 }
 
@@ -51,7 +61,7 @@ export interface EventPayload {
 }
 
 export interface Location {
-  id: String;
+  id: LocationId;
   type: LocationTypes | String;
   title: String;
   image_url: String;
@@ -61,7 +71,7 @@ export interface Location {
 }
 
 export interface MechanicMapPayload {
-  id: String;
+  id: LevelId;
   no: Number;
   mapWidth: Number;
   mapHeight: Number;
@@ -90,6 +100,16 @@ export enum MapAnimationModes {
   ARROW = 'arrow',
   FOOT = 'foot',
   FEET = 'feet',
+}
+
+interface ColorParams {
+  activeStores?: Color;
+  inactiveStores?: Color;
+  services?: Color;
+  background?: Color;
+  locations?: {
+    [key: string]: Color;
+  };
 }
 
 export interface MechanicMapOptions {
@@ -135,6 +155,7 @@ export interface MechanicMapOptions {
     offset: Number;
   };
   beaconMode?: Boolean;
+  colors?: ColorParams;
 }
 
 export interface PostMessagePayload {
@@ -151,7 +172,7 @@ interface InitParams {
 export interface MechanicMapProps extends InitParams, WebViewProps {
   disableAutoInit?: Boolean;
   onEvent?: (event: EventPayload) => void;
-  onLevelSwitched?: (newLevel: { id: String; no: Number }) => void;
+  onLevelSwitched?: (newLevel: { id: LevelId; no: Number }) => void;
   onLocationOpened?: (location: Location) => void;
   onLocationClosed?: () => void;
   onMapLoaded?: () => void;
@@ -189,7 +210,7 @@ export type MechanicMapHandle = {
   postMessage: (params: PostMessagePayload) => void;
   init: (params: InitParams) => void;
   showLocation: (params: {
-    id: String;
+    id: LocationId;
     type: LocationTypes;
     duration?: Boolean;
     closeNavigation?: Boolean;
@@ -250,6 +271,7 @@ export type MechanicMapHandle = {
   ) => void;
   addLevel: (level: MechanicMapPayload) => void;
   resetLevel: () => void;
+  changeColors: (colors: ColorParams) => void;
   reload: () => void;
 };
 

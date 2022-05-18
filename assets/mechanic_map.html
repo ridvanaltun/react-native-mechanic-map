@@ -4553,10 +4553,6 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
       fill: #7e8b93;
     }
   }
-  g#stores > * {
-    stroke: none;
-    fill: #7e8b93;
-  }
   g#stores > path {
     fill: #dbe2e5;
   }
@@ -4582,6 +4578,12 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
     -moz-box-shadow: none;
     box-shadow: none;
     border: none;
+  }
+  .svg-map-tooltip-close {
+    display: none;
+  }
+  .svg-map-tooltip-content {
+    margin-top: 0px;
   }
 </style>
 
@@ -4628,6 +4630,12 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
       (window.MechanicMap && window.MechanicMap.default)($);
 
       function initFunction(payload) {
+
+        // change body color
+        if (payload?.options?.colors?.background) {
+          $('body').css('background-color', payload.options.colors.background);
+        }
+
         const svgMapParams = {
           id: 'location',
           initialScaleFactor: 1.0,
@@ -4667,7 +4675,6 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
             frequencyFactor: 8,
           },
           stackMode: false,
-          fillColor: 'rgb(215, 167, 71)',
           data: {
             levels: payload.levels,
             mapWidth: payload.levels[0].mapWidth,
@@ -4679,6 +4686,12 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
         mechanicMap = $mapContainer.svgMap(svgMapParams).data('svg-map');
 
         $mapContainer.on('mapReady', function () {
+
+          // handle colors
+          if (payload?.options?.colors) {
+            changeColors(payload.options.colors);
+          }
+
           rnPostMessage({ action: 'mapLoaded' });
         });
 
@@ -4828,6 +4841,31 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
         mechanicMap.resetLevel();
       }
 
+      function changeColors(payload) {
+        if (payload?.background) {
+          $('body').css('background-color', payload.background);
+          $('.svg-map-layer').css('background-color', payload.background);
+        }
+
+        if (payload?.activeStores) {
+          $('#stores > .svg-map-clickable').css('fill', payload.activeStores);
+        }
+
+        if (payload?.inactiveStores) {
+          $('#stores > path:not(.svg-map-clickable)').css('fill', payload.inactiveStores);
+        }
+
+        if (payload?.services) {
+          $('#services > .svg-map-clickable').css('fill', payload.services);
+        }
+
+        if (payload?.locations) {
+          for (const [key, value] of Object.entries(payload.locations)) {
+            $('#' + key).css('fill', value);
+          }
+        }
+      }
+
       const onMessage = (e) => {
         let message = JSON.parse(e.data);
 
@@ -4882,6 +4920,9 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
             break;
           case 'zoomTo':
             zoomTo(message.payload);
+            break;
+          case 'changeColors':
+            changeColors(message.payload);
             break;
           case 'reload':
             location.reload();

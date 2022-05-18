@@ -196,6 +196,14 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           action: MapActions.RESET_LEVEL,
         });
       },
+      changeColors(colors) {
+        postMessage({
+          action: MapActions.CHANGE_COLORS,
+          payload: {
+            ...colors,
+          },
+        });
+      },
       reload() {
         postMessage({
           action: MapActions.RELOAD,
