@@ -1,5 +1,7 @@
 package com.example.reactnativemechanicmap;
 
+import android.webkit.WebView;
+
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
@@ -45,6 +47,7 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager()); // Remove this line if you don't want Flipper enabled
+     WebView.setWebContentsDebuggingEnabled(true);
   }
 
   /**

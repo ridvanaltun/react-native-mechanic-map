@@ -4685,6 +4685,11 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
 
         mechanicMap = $mapContainer.svgMap(svgMapParams).data('svg-map');
 
+        // remove line animation if line color is set
+        if (svgMapParams?.strokeOptions?.color) {
+          $("<style type='text/css'> .navigation-line-animation{ animation:none !important;} </style>").appendTo("head");
+        }
+
         $mapContainer.on('mapReady', function () {
 
           // handle colors
