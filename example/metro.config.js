@@ -1,40 +1,29 @@
 const path = require('path');
-const blacklist = require('metro-config/src/defaults/blacklist');
-const escape = require('escape-string-regexp');
-const pak = require('../package.json');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-const root = path.resolve(__dirname, '..');
+const libraryRoot = path.resolve(__dirname, '..');
 
-const modules = Object.keys({
-  ...pak.peerDependencies,
-});
+/**
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * `watchFolders` includes the library repo root so Metro picks up changes when
+ * `react-native-mechanic-map` is linked via `file:..`.
+ *
+ * @type {import('@react-native/metro-config').MetroConfig}
+ */
+const exampleNodeModules = path.resolve(__dirname, 'node_modules');
+const libraryNodeModules = path.resolve(libraryRoot, 'node_modules');
 
-module.exports = {
-  projectRoot: __dirname,
-  watchFolders: [root],
-
-  // We need to make sure that only one version is loaded for peerDependencies
-  // So we blacklist them at the root, and alias them to the versions in example's node_modules
+const config = {
+  watchFolders: [libraryRoot],
   resolver: {
-    blacklistRE: blacklist(
-      modules.map(
-        (m) =>
-          new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
-      )
-    ),
-
-    extraNodeModules: modules.reduce((acc, name) => {
-      acc[name] = path.join(__dirname, 'node_modules', name);
-      return acc;
-    }, {}),
-  },
-
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
+    // Files under the linked library (`../src`) must resolve `react`, `react/jsx-runtime`,
+    // etc. from the example app. The repo root still has React 16 (no jsx-runtime), which
+    // Metro would otherwise pick via hierarchical lookup first.
+    nodeModulesPaths: [exampleNodeModules, libraryNodeModules],
+    disableHierarchicalLookup: true,
   },
 };
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);

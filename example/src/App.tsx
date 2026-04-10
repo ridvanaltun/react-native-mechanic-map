@@ -47,7 +47,7 @@ const Button = ({
   );
 };
 
-export default function App() {
+function App() {
   const mechanicMapRef = React.useRef<MechanicMapHandle>(null);
 
   const [show, setShow] = React.useState(true);
@@ -59,8 +59,8 @@ export default function App() {
 
   const locations = React.useMemo(
     () =>
-      Payload.map((floor) => floor.locations).reduce((a, b) => a.concat(b), []),
-    []
+      Payload.map(floor => floor.locations).reduce((a, b) => a.concat(b), []),
+    [],
   );
 
   const renderFloorButtons = () => {
@@ -201,7 +201,7 @@ export default function App() {
           text="Starbucks to Adidas"
           onPress={() => {
             mechanicMapRef?.current?.showNavigation(
-              ExampleRoutes.STARBUCKS_TO_ADIDAS
+              ExampleRoutes.STARBUCKS_TO_ADIDAS,
             );
           }}
         />
@@ -210,7 +210,7 @@ export default function App() {
           text="Adidas to Avelieer"
           onPress={() => {
             mechanicMapRef?.current?.showNavigation(
-              ExampleRoutes.ADIDAS_TO_AVELIEER
+              ExampleRoutes.ADIDAS_TO_AVELIEER,
             );
           }}
         />
@@ -230,9 +230,9 @@ export default function App() {
           text="Highlight Some Stores"
           onPress={() => {
             const groundFloorStores = locations
-              .filter((l) => l.type === 'store')
-              .filter((l) => l.id[0] === 'K' && l.id[1] === '0')
-              .map((l) => l.id);
+              .filter(l => l.type === 'store')
+              .filter(l => l.id[0] === 'K' && l.id[1] === '0')
+              .map(l => l.id);
 
             mechanicMapRef.current?.highlightLocations(groundFloorStores, {
               type: LocationTypes.STORE,
@@ -355,10 +355,10 @@ export default function App() {
         onMapLoaded={() => {
           console.log('onMapLoaded => map loaded!');
         }}
-        onLevelSwitched={(newLevel) => {
+        onLevelSwitched={newLevel => {
           console.log(`onLevelSwitched => new level is ${newLevel.no}`);
         }}
-        onLocationOpened={(target) => {
+        onLocationOpened={target => {
           console.log(`onLocationOpened => target is ${target}`);
         }}
         onLocationClosed={() => {
@@ -370,7 +370,7 @@ export default function App() {
         onLocationHighlighted={() => {
           console.log('onLocationHighlighted => location highlighted');
         }}
-        onMapError={(data) => {
+        onMapError={data => {
           console.log(`onMapError => ${JSON.stringify(data)}`);
         }}
       />
@@ -415,3 +415,5 @@ const styles = StyleSheet.create({
     color: 'orange',
   },
 });
+
+export default App;

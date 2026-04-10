@@ -1,17 +1,15 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Platform } from 'react-native';
 import PropTypes from 'prop-types';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
-import {
+import type {
   EventPayload,
-  LocationTypes,
-  MapActions,
-  MapResponses,
   MechanicMapHandle,
   MechanicMapProps,
   PostMessagePayload,
 } from './index';
+import { LocationTypes, MapActions, MapResponses } from './index';
 
 const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
   (
