@@ -3,7 +3,7 @@ version: 2.1
 executors:
   default:
     docker:
-      - image: circleci/node:12
+      - image: cimg/node:20.18
     working_directory: ~/project
 
 commands:
@@ -20,11 +20,11 @@ jobs:
       - attach_project
       - restore_cache:
           keys:
-            - dependencies-{{ checksum "package.json" }}
+            - dependencies-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
             - dependencies-
       - restore_cache:
           keys:
-            - dependencies-example-{{ checksum "example/package.json" }}
+            - dependencies-example-{{ checksum "example/package.json" }}-{{ checksum "example/yarn.lock" }}
             - dependencies-example-
       - run:
           name: Install dependencies
@@ -32,11 +32,11 @@ jobs:
             yarn install --cwd example --frozen-lockfile
             yarn install --frozen-lockfile
       - save_cache:
-          key: dependencies-{{ checksum "package.json" }}
+          key: dependencies-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
       - save_cache:
-          key: dependencies-example-{{ checksum "example/package.json" }}
+          key: dependencies-example-{{ checksum "example/package.json" }}-{{ checksum "example/yarn.lock" }}
           paths:
             - example/node_modules
       - persist_to_workspace:
@@ -49,9 +49,16 @@ jobs:
     steps:
       - attach_project
       - run:
-          name: Lint files
-          command: |
-            yarn lint
+          name: Lint package
+          command: yarn lint
+
+  lint-example:
+    executor: default
+    steps:
+      - attach_project
+      - run:
+          name: Lint example app
+          command: yarn lint:example
 
   typescript:
     executor: default
@@ -59,8 +66,7 @@ jobs:
       - attach_project
       - run:
           name: Typecheck files
-          command: |
-            yarn typescript
+          command: yarn typescript
 
   unit-tests:
     executor: default
@@ -68,8 +74,7 @@ jobs:
       - attach_project
       - run:
           name: Run unit tests
-          command: |
-            yarn test --coverage
+          command: yarn test --coverage
       - store_artifacts:
           path: coverage
           destination: coverage
@@ -80,8 +85,7 @@ jobs:
       - attach_project
       - run:
           name: Build package
-          command: |
-            yarn prepare
+          command: yarn prepare
 
   deploy:
     executor: default
@@ -112,6 +116,9 @@ workflows:
       - lint:
           requires:
             - install-dependencies
+      - lint-example:
+          requires:
+            - install-dependencies
       - typescript:
           requires:
             - install-dependencies
@@ -125,6 +132,7 @@ workflows:
           requires:
             - install-dependencies
             - lint
+            - lint-example
             - typescript
             - unit-tests
             - build-package

@@ -1,31 +1,53 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Platform } from 'react-native';
-import PropTypes from 'prop-types';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-
 import type {
-  EventPayload,
+  WebViewErrorEvent,
+  WebViewHttpErrorEvent,
+  WebViewRenderProcessGoneEvent,
+} from 'react-native-webview/lib/WebViewTypes';
+
+import { LocationTypes, MapActions, MapResponses } from './mapEnums';
+import { parseMapWebViewMessage } from './parseMapWebViewMessage';
+import type {
   MechanicMapHandle,
   MechanicMapProps,
   PostMessagePayload,
-} from './index';
-import { LocationTypes, MapActions, MapResponses } from './index';
+} from './types';
+
+function reportBridgeFailure(
+  onMapError: MechanicMapProps['onMapError'],
+  message: string,
+  error: string,
+  source = 'react-native-webview'
+) {
+  onMapError?.({
+    message,
+    source,
+    lineno: 0,
+    colno: 0,
+    error,
+  });
+}
 
 const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
   (
     {
-      languageCode,
-      disableAutoInit,
+      languageCode = 'en',
+      disableAutoInit = false,
       payload,
-      options,
+      options = {},
       onEvent,
       onLevelSwitched,
       onLocationOpened,
       onLocationClosed,
       onMapLoaded,
-      onNavigationCancalled,
+      onNavigationCancelled,
       onLocationHighlighted,
       onMapError,
+      onError: onWebViewErrorProp,
+      onHttpError: onHttpErrorProp,
+      onRenderProcessGone: onRenderProcessGoneProp,
       ...props
     },
     ref
@@ -118,13 +140,13 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           action: MapActions.HIDE_LOCATION,
         });
       },
-      setCurrentLocation(x, y, floorNo) {
+      setCurrentLocation(x, y, locationOpts) {
         postMessage({
           action: MapActions.SET_CURRENT_LOCATION,
           payload: {
             x,
             y,
-            floorNo,
+            floorNo: locationOpts?.floorNo,
           },
         });
       },
@@ -133,12 +155,12 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           action: MapActions.SHOW_CURRENT_LOCATION,
         });
       },
-      moveCurrentLocation(coords, params) {
+      moveCurrentLocation(coords, moveOpts) {
         postMessage({
           action: MapActions.MOVE_CURRENT_LOCATION,
           payload: {
             coords,
-            floorNo: params?.floorNo,
+            floorNo: moveOpts?.floorNo,
           },
         });
       },
@@ -219,48 +241,96 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
               }
             : require('../assets/mechanic_map.html')
         }
-        onMessage={(event: WebViewMessageEvent) => {
-          const { action, data }: EventPayload = JSON.parse(
-            event.nativeEvent.data
-          );
+        onMessage={(msg: WebViewMessageEvent) => {
+          const parsed = parseMapWebViewMessage(msg.nativeEvent.data);
+          if (!parsed.ok) {
+            const { failure } = parsed;
+            if (failure.reason === 'invalid_json') {
+              reportBridgeFailure(
+                onMapError,
+                'Invalid WebView message',
+                'JSON parse failed'
+              );
+            } else if (failure.reason === 'invalid_shape') {
+              reportBridgeFailure(
+                onMapError,
+                'Invalid WebView message',
+                'Expected a JSON object'
+              );
+            } else {
+              reportBridgeFailure(
+                onMapError,
+                'Unknown map message action',
+                `action=${failure.action}`
+              );
+            }
+            return;
+          }
+
+          const mapEvent = parsed.payload;
 
           if (onEvent) {
-            onEvent({ action, data });
+            onEvent(mapEvent);
           }
 
-          if (action === MapResponses.MAP_LOADED && onMapLoaded) {
-            onMapLoaded();
+          switch (mapEvent.action) {
+            case MapResponses.MAP_LOADED:
+              onMapLoaded?.();
+              break;
+            case MapResponses.LOCATION_OPENED:
+              if (mapEvent.data !== undefined) {
+                onLocationOpened?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.LOCATION_CLOSED:
+              onLocationClosed?.();
+              break;
+            case MapResponses.LEVEL_SWITCHED:
+              if (mapEvent.data !== undefined) {
+                onLevelSwitched?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.NAVIGATION_CANCELLED:
+              onNavigationCancelled?.();
+              break;
+            case MapResponses.LOCATION_HIGHLIGHTED:
+              onLocationHighlighted?.();
+              break;
+            case MapResponses.ERROR:
+              if (mapEvent.data !== undefined) {
+                onMapError?.(mapEvent.data);
+              }
+              break;
           }
-
-          if (action === MapResponses.LOCATION_OPENED && onLocationOpened) {
-            onLocationOpened(data);
-          }
-
-          if (action === MapResponses.LOCATION_CLOSED && onLocationClosed) {
-            onLocationClosed();
-          }
-
-          if (action === MapResponses.LEVEL_SWITCHED && onLevelSwitched) {
-            onLevelSwitched(data); // new floor no
-          }
-
-          if (
-            action === MapResponses.NAVIGATION_CANCELLED &&
-            onNavigationCancalled
-          ) {
-            onNavigationCancalled();
-          }
-
-          if (
-            action === MapResponses.LOCATION_HIGHLIGHTED &&
-            onLocationHighlighted
-          ) {
-            onLocationHighlighted();
-          }
-
-          if (action === MapResponses.ERROR && onMapError) {
-            onMapError(data);
-          }
+        }}
+        onError={(e: WebViewErrorEvent) => {
+          onWebViewErrorProp?.(e);
+          const ne = e.nativeEvent;
+          reportBridgeFailure(
+            onMapError,
+            ne.description || 'WebView load error',
+            ne.domain != null ? `${ne.domain}:${ne.code}` : String(ne.code),
+            ne.url
+          );
+        }}
+        onHttpError={(e: WebViewHttpErrorEvent) => {
+          onHttpErrorProp?.(e);
+          const ne = e.nativeEvent;
+          reportBridgeFailure(
+            onMapError,
+            ne.description || 'WebView HTTP error',
+            `HTTP ${ne.statusCode}`,
+            ne.url
+          );
+        }}
+        onRenderProcessGone={(e: WebViewRenderProcessGoneEvent) => {
+          onRenderProcessGoneProp?.(e);
+          reportBridgeFailure(
+            onMapError,
+            'WebView render process exited',
+            e.nativeEvent.didCrash ? 'crashed' : 'system terminated',
+            'react-native-webview'
+          );
         }}
         onLoadEnd={() => {
           if (disableAutoInit) return;
@@ -283,15 +353,5 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
     );
   }
 );
-
-MechanicMap.propTypes = {
-  payload: PropTypes.array.isRequired,
-};
-
-MechanicMap.defaultProps = {
-  languageCode: 'en',
-  disableAutoInit: false,
-  options: {},
-};
 
 export default MechanicMap;

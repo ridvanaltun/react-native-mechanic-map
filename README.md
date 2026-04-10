@@ -83,14 +83,15 @@ const App = () => {
       onLocationClosed={() => {
         // executes when any location closed
       }}
-      onNavigationCancalled={() => {
-        // executes when navigation cancalled
+      onNavigationCancelled={() => {
+        // executes when navigation is cancelled
       }}
       onLocationHighlighted={(target) => {
         // executes when location highlighted
       }}
       onMapError={(data) => {
-        // executes when occours error on mechanic map
+        // map script errors, plus invalid/unknown WebView messages, WebView load/HTTP errors,
+        // and Android render-process loss (runs after any onError / onHttpError / onRenderProcessGone you pass in)
       }}
     />
   );
@@ -100,7 +101,7 @@ const App = () => {
 **Select Floor:**
 
 ```tsx
-mechanicMapRef?.current?.setFloor(floorNo: Number) => void;
+mechanicMapRef?.current?.setFloor(floorNo: number) => void;
 ```
 
 **Navigation:**
@@ -111,16 +112,16 @@ import type {Route} from 'react-native-mechanic-map'
 mechanicMapRef?.current?.showNavigation(
   route: Route,
   options?: {
-    autoMode?: Boolean,
-    zoomEnabled?: Boolean,
-    showPins?: Boolean,
+    autoMode?: boolean,
+    zoomEnabled?: boolean,
+    showPins?: boolean,
 }) => void;
 ```
 
 **Close Navigation:**
 
 ```tsx
-mechanicMapRef?.current?.closeNavigation(resetLevel?: Boolean) => void;
+mechanicMapRef?.current?.closeNavigation(resetLevel?: boolean) => void;
 ```
 
 **Show Location:**
@@ -129,11 +130,11 @@ mechanicMapRef?.current?.closeNavigation(resetLevel?: Boolean) => void;
 import type {LocationTypes} from 'react-native-mechanic-map'
 
 mechanicMapRef?.current?.showLocation({
-  id: String,
+  id: string,
   type: LocationTypes,
-  duration?: Boolean,
-  closeNavigation?: Boolean,
-  moveAndZoom?: Boolean,
+  duration?: boolean,
+  closeNavigation?: boolean,
+  moveAndZoom?: boolean,
 }) => void;
 ```
 
@@ -149,11 +150,11 @@ mechanicMapRef?.current?.hideLocation() => void;
 import type {LocationTypes} from 'react-native-mechanic-map'
 
 mechanicMapRef?.current?.highlightLocations(
-  ids: Array<String>,
+  ids: string[],
   options?: {
     type?: LocationTypes,
-    zoomEnabled?: Boolean,
-    duration?: Number,
+    zoomEnabled?: boolean,
+    duration?: number,
 }) => void;
 ```
 
@@ -161,10 +162,10 @@ mechanicMapRef?.current?.highlightLocations(
 
 ```tsx
 mechanicMapRef.current?.setCurrentLocation(
-  x: Number,
-  y: Number,
+  x: number,
+  y: number,
   options?: {
-    floorNo?: Number,
+    floorNo?: number,
 }) => void;
 ```
 
@@ -178,9 +179,9 @@ mechanicMapRef.current?.showCurrentLocation() => void;
 
 ```tsx
 mechanicMapRef.current?.moveCurrentLocation(
-  coords: Array<{ x: Number; y: Number }>,
+  coords: Array<{ x: number; y: number }>,
   options?: {
-    floorNo?: Number,
+    floorNo?: number,
   }
 ) => void;
 ```
@@ -207,25 +208,25 @@ mechanicMapRef.current?.zoomOut() => void;
 
 ```tsx
 mechanicMapRef.current?.zoomTo(
-  x: Number,
-  y: Number,
+  x: number,
+  y: number,
   options?: {
-    scale?: Number;
-    duration?: Number;
-    easing?: String;
+    scale?: number;
+    duration?: number;
+    easing?: string;
 }) => void;
 ```
 
 **Move To:**
 
 ```tsx
-mechanicMapRef.current?.zoomTo(
-  x: Number,
-  y: Number,
+mechanicMapRef.current?.moveTo(
+  x: number,
+  y: number,
   options?: {
-    scale?: Number;
-    duration?: Number;
-    easing?: String;
+    scale?: number;
+    duration?: number;
+    easing?: string;
 }) => void;
 ```
 
@@ -265,6 +266,8 @@ mechanicMapRef?.current?.reload() => void;
 ```
 
 ## Example App
+
+The example app depends on the library via `"react-native-mechanic-map": "file:.."` (see `example/package.json`). After changing library `src/`, run `yarn prepare` at the repo root before publishing or when you need an up-to-date `lib/` for consumers. TypeScript in the example resolves the package through `example/tsconfig.json` paths to `../src/index.tsx` so local types stay in sync; if tooling ever looks stale, reinstall example dependencies (`yarn install` or `npm install` in `example/`).
 
 ```sh
 # clone the project

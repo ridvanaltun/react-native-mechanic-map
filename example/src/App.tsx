@@ -364,8 +364,8 @@ function App() {
         onLocationClosed={() => {
           console.log('onLocationClosed => location closed');
         }}
-        onNavigationCancalled={() => {
-          console.log('onNavigationCancalled => navigation cancelled');
+        onNavigationCancelled={() => {
+          console.log('onNavigationCancelled => navigation cancelled');
         }}
         onLocationHighlighted={() => {
           console.log('onLocationHighlighted => location highlighted');

@@ -4,7 +4,8 @@
     "types": ["jest"],
     "baseUrl": ".",
     "paths": {
-      "react": ["./node_modules/@types/react"]
+      "react": ["./node_modules/@types/react"],
+      "react-native-mechanic-map": ["../src/index.tsx"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

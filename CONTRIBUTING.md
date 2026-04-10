@@ -12,7 +12,7 @@ yarn
 
 > While it's possible to use [`npm`](https://github.com/npm/cli), the tooling is built around [`yarn`](https://classic.yarnpkg.com/), so you'll have an easier time if you use `yarn` for development.
 
-While developing, you can run the [example app](/example/) to test your changes. Any changes you make in your library's JavaScript code will be reflected in the example app without a rebuild. If you change any native code, then you'll need to rebuild the example app.
+While developing, you can run the [example app](/example/) to test your changes. Metro serves the library from `src/` (see the `react-native` field in `package.json`). Run **`yarn prepare`** at the repo root after changing `src/` when you need fresh `lib/` output (npm consumers, or verifying the build). The example’s TypeScript config maps `react-native-mechanic-map` to `../src/index.tsx` so `tsc` and the IDE use source types; if you see outdated types from a copied `node_modules` tree, run `yarn install` again inside `example/`. If you change any native code, rebuild the example app.
 
 To start the packager:
 
@@ -32,11 +32,12 @@ To run the example app on iOS:
 yarn example ios
 ```
 
-Make sure your code passes TypeScript and ESLint. Run the following to verify:
+Make sure your code passes TypeScript and ESLint. The package root uses ESLint 7; the example app uses ESLint 8 (`@react-native/eslint-config`). Run:
 
 ```sh
 yarn typescript
 yarn lint
+yarn lint:example
 ```
 
 To fix formatting errors, run the following:
@@ -51,9 +52,9 @@ Remember to add tests for your change if possible. Run the unit tests by:
 yarn test
 ```
 
-To edit the Objective-C files, open `example/ios/MechanicMapExample.xcworkspace` in XCode and find the source files at `Pods > Development Pods > react-native-mechanic-map`.
+To edit native example files, open `example/ios/AwesomeProject.xcworkspace` in Xcode (not the `.xcodeproj` alone when using CocoaPods).
 
-To edit the Kotlin files, open `example/android` in Android studio and find the source files at `reactnativemechanicmap` under `Android`.
+To edit Android example files, open `example/android` in Android Studio.
 
 ### Commit message convention
 

@@ -27,6 +27,7 @@
     "test": "jest",
     "typescript": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "lint:example": "yarn --cwd example lint",
     "prepare": "bob build",
     "release": "release-it",
     "example": "yarn --cwd example",
@@ -82,15 +83,17 @@
   },
   "jest": {
     "preset": "react-native",
+    "watchman": false,
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
-    ]
+    ],
+    "testPathIgnorePatterns": ["<rootDir>/example/"]
   },
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
+      "pre-commit": "yarn lint && yarn lint:example && yarn typescript"
     }
   },
   "commitlint": {

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  mechanic_map.html
+  - First <script>: jQuery + webpack bundle (svg-map, GSAP, lodash, etc.). Build output — do not hand-edit.
+  - <style>: map / navigation UI overrides.
+  - Last <script>: React Native WebView bridge (postMessage, command dispatch). Maintain here.
+-->
 <html>
 <head>
     <title>Mechanic Map</title>
@@ -4605,6 +4611,7 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
     <!-- Content ends -->
 </div>
 </body>
+<!-- RN WebView bridge: postMessage + command dispatch (see COMMAND_HANDLERS). -->
 <script>
     const rnPostMessage = function (data) {
       window.ReactNativeWebView.postMessage(JSON.stringify(data));
@@ -4871,69 +4878,46 @@ C.e._gsDefine("easing.Back",["easing.Ease"],(function(){var A,g,I,t,e=C.e.GreenS
         }
       }
 
-      const onMessage = (e) => {
-        let message = JSON.parse(e.data);
+      /** Action string → handler; keep keys aligned with native MapActions / postMessage. */
+      const COMMAND_HANDLERS = {
+        init: (message) => initFunction(message.payload),
+        selectFloor: (message) => selectFloor(message.payload),
+        selectLocation: (message) => selectLocation(message.payload),
+        showNavigation: (message) => showNavigation(message.payload),
+        closeNavigation: (message) => closeNavigation(message.payload),
+        highlightLocations: (message) => highlightLocations(message.payload),
+        hideLocation: () => hideLocation(),
+        setCurrentLocation: (message) => setCurrentLocation(message.payload),
+        showCurrentLocation: () => showCurrentLocation(),
+        moveCurrentLocation: (message) => moveCurrentLocation(message.payload),
+        removeCurrentLocation: () => removeCurrentLocation(),
+        zoomIn: () => zoomIn(),
+        zoomOut: () => zoomOut(),
+        addLevel: (message) => addLevel(message.payload),
+        resetLevel: () => resetLevel(),
+        moveTo: (message) => moveTo(message.payload),
+        zoomTo: (message) => zoomTo(message.payload),
+        changeColors: (message) => changeColors(message.payload),
+        reload: () => location.reload(),
+      };
 
-        switch (message.action) {
-          case 'init':
-            initFunction(message.payload);
-            break;
-          case 'selectFloor':
-            selectFloor(message.payload);
-            break;
-          case 'selectLocation':
-            selectLocation(message.payload);
-            break;
-          case 'showNavigation':
-            showNavigation(message.payload);
-            break;
-          case 'closeNavigation':
-            closeNavigation(message.payload);
-            break;
-          case 'highlightLocations':
-            highlightLocations(message.payload);
-            break;
-          case 'hideLocation':
-            hideLocation();
-            break;
-          case 'setCurrentLocation':
-            setCurrentLocation(message.payload);
-            break;
-          case 'showCurrentLocation':
-            showCurrentLocation();
-            break;
-          case 'moveCurrentLocation':
-            moveCurrentLocation(message.payload);
-            break;
-          case 'removeCurrentLocation':
-            removeCurrentLocation();
-            break;
-          case 'zoomIn':
-            zoomIn();
-            break;
-          case 'zoomOut':
-            zoomOut();
-            break;
-          case 'addLevel':
-            addLevel(message.payload);
-            break;
-          case 'resetLevel':
-            resetLevel();
-            break;
-          case 'moveTo':
-            moveTo(message.payload);
-            break;
-          case 'zoomTo':
-            zoomTo(message.payload);
-            break;
-          case 'changeColors':
-            changeColors(message.payload);
-            break;
-          case 'reload':
-            location.reload();
-            break;
-          default:
-            break;
+      const onMessage = (e) => {
+        let raw = e.data;
+        if (raw == null) {
+          return;
+        }
+        let message;
+        try {
+          message = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        } catch (err) {
+          return;
+        }
+        if (!message || typeof message.action !== 'string') {
+          return;
+        }
+        const run = COMMAND_HANDLERS[message.action];
+        if (run) {
+          run(message);
         }
       };
 
