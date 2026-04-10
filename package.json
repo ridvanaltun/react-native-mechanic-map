@@ -1,6 +1,6 @@
 {
   "name": "react-native-mechanic-map",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "React Native wrapper for Mechanic Map",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -88,7 +88,9 @@
       "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
     ],
-    "testPathIgnorePatterns": ["<rootDir>/example/"]
+    "testPathIgnorePatterns": [
+      "<rootDir>/example/"
+    ]
   },
   "husky": {
     "hooks": {
