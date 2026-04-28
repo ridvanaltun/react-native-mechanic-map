@@ -13,6 +13,9 @@
   <img src="docs/example-1.png" alt="Showcase example 1" width="32%" />
   <img src="docs/example-2.png" alt="Showcase example 2" width="32%" />
   <img src="docs/example-3.png" alt="Showcase example 3" width="32%" />
+  <img src="docs/example-4.png" alt="Showcase example 4" width="32%" />
+  <img src="docs/example-5.png" alt="Showcase example 5" width="32%" />
+  <img src="docs/example-6.png" alt="Showcase example 6" width="32%" />
 </p>
 
 <p align="center">
