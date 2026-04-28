@@ -21,6 +21,7 @@
 
 ## Table of contents <!-- omit in toc -->
 
+- [Showcase](#showcase)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Native setup](#native-setup)
@@ -32,6 +33,7 @@
   - [Events](#events)
   - [Imperative API](#imperative-api)
 - [Types](#types)
+  - [MechanicMapOptions](#mechanicmapoptions)
 - [Example app](#example-app)
 - [Contributing](#contributing)
 - [License](#license)
@@ -44,7 +46,7 @@
 ## Installation
 
 ```sh
-npm install react-native-mechanic-map react-native-webview
+npm install react-native-mechanic-map
 ```
 
 ## Native setup
@@ -164,6 +166,63 @@ mapRef.current?.showNavigation(route, {
 mapRef.current?.closeNavigation(true);
 ```
 
+Multi-floor programs, building transitions, and related helpers (mirrors the API on the embedded map instance):
+
+```ts
+import type {
+  MultipleNavigationSegment,
+  StartNavigationProgram,
+  UpdateLocalizedParams,
+} from 'react-native-mechanic-map';
+
+const segment: MultipleNavigationSegment = {
+  type: 'outdoor', // or a `building` id for your data
+  navigation: route,
+};
+
+mapRef.current?.showNavigationWithMultiple([segment, { navigation: otherRoute }], {
+  autoMode: false,
+  zoomEnabled: true,
+  showPins: true,
+  groupIndex: 0,
+});
+
+const program: StartNavigationProgram = route; // or an array of `MultipleNavigationSegment`
+mapRef.current?.startNavigation(program, {
+  autoMode: true,
+  zoomEnabled: true,
+  showPins: true,
+});
+
+mapRef.current?.restartNavigation();
+mapRef.current?.prevNavigate();
+mapRef.current?.nextNavigate();
+mapRef.current?.prevBuildingNavigate();
+mapRef.current?.nextBuildingNavigate();
+mapRef.current?.enterBuilding('building-id');
+mapRef.current?.exitBuilding();
+mapRef.current?.updateLocalized({
+  youAreHereText: 'You are here',
+} as UpdateLocalizedParams);
+mapRef.current?.changeNavigationPins({ startPin: 'https://.../a.png' });
+mapRef.current?.resetNavigationPins();
+```
+
+**Floor by level id & single highlight**
+
+```ts
+mapRef.current?.setFloorById('level-uuid', {
+  resetZoom: true,
+  hideLocation: true,
+  autoMode: false,
+  willSwitchLevel: true,
+});
+mapRef.current?.highlightLocation('store-id', {
+  zoomEnabled: true,
+  duration: 800,
+});
+```
+
 **Locations**
 
 ```ts
@@ -197,6 +256,7 @@ mapRef.current?.moveCurrentLocation(
   { floorNo: 0 }
 );
 mapRef.current?.removeCurrentLocation();
+mapRef.current?.setCurrentLocationFromBlock('anchor-location-id');
 ```
 
 **Viewport**
@@ -241,6 +301,8 @@ Exported from the package (see [`src/types.ts`](src/types.ts) / `lib/typescript`
 | `Route` | Navigation path for `showNavigation` |
 | `Location`, `LocationTypes`, `Color`, `ColorParams` | Locations and theming |
 | `MechanicMapTooltipOptions`, `MechanicMapTextOnRectMode` | Tooltip and rect-label config |
+| `MultipleNavigationSegment`, `StartNavigationProgram` | Multi-leg navigation programs |
+| `UpdateLocalizedParams`, `NavigateStepOptions` | Localization and nav-step options |
 | `EventPayload`, `LevelSwitchedData`, … | Event typing with `onEvent` |
 
 ### MechanicMapOptions
@@ -319,7 +381,7 @@ Can be `true` / `false` or an object: `enabled`, `fontFamily`, `fillColor`, `fon
 
 ## Example app
 
-Screenshots in [Showcase](#showcase) are from the `example/` app. Open **Map options** to toggle `MechanicMapOptions` (rotation, tooltips, animation, stack mode, layout fields, etc.) against the bundled fixtures.
+Screenshots in [Showcase](#showcase) are from the `example/` app. Open **Map options** for `MechanicMapOptions`, and **Floor, highlight, showLocation** for basic ref calls plus an **Extended ref API (bridge)** block (`setFloorById`, `startNavigation`, `showNavigationWithMultiple`, building helpers, etc.).
 
 **Local library (`file:..`)**
 

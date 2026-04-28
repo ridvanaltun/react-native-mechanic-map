@@ -13,6 +13,7 @@ import type {
   MechanicMapHandle,
   MechanicMapProps,
   PostMessagePayload,
+  StartNavigationProgram,
 } from './types';
 
 function reportBridgeFailure(
@@ -112,6 +113,145 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
             zoomEnabled:
               params?.zoomEnabled === undefined ? true : params.zoomEnabled,
             showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      showNavigationWithMultiple(segments, params) {
+        postMessage({
+          action: MapActions.SHOW_NAVIGATION_MULTIPLE,
+          payload: {
+            navigationDetails: segments,
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+            groupIndex:
+              params?.groupIndex === undefined ? 0 : params.groupIndex,
+          },
+        });
+      },
+      startNavigation(program: StartNavigationProgram, params) {
+        postMessage({
+          action: MapActions.START_NAVIGATION,
+          payload: {
+            navigationDetails: program,
+            autoMode: params?.autoMode === undefined ? true : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      restartNavigation() {
+        postMessage({
+          action: MapActions.RESTART_NAVIGATION,
+          payload: {},
+        });
+      },
+      prevNavigate(params) {
+        postMessage({
+          action: MapActions.PREV_NAVIGATE,
+          payload: {
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      nextNavigate(params) {
+        postMessage({
+          action: MapActions.NEXT_NAVIGATE,
+          payload: {
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      prevBuildingNavigate(params) {
+        postMessage({
+          action: MapActions.PREV_BUILDING_NAVIGATE,
+          payload: {
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      nextBuildingNavigate(params) {
+        postMessage({
+          action: MapActions.NEXT_BUILDING_NAVIGATE,
+          payload: {
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            zoomEnabled:
+              params?.zoomEnabled === undefined ? true : params.zoomEnabled,
+            showPins: params?.showPins === undefined ? true : params.showPins,
+          },
+        });
+      },
+      enterBuilding(buildingId) {
+        postMessage({
+          action: MapActions.ENTER_BUILDING,
+          payload: { buildingId },
+        });
+      },
+      exitBuilding() {
+        postMessage({
+          action: MapActions.EXIT_BUILDING,
+          payload: {},
+        });
+      },
+      updateLocalized(params) {
+        postMessage({
+          action: MapActions.UPDATE_LOCALIZED,
+          payload: { ...params },
+        });
+      },
+      changeNavigationPins(params) {
+        postMessage({
+          action: MapActions.CHANGE_NAVIGATION_PINS,
+          payload: { ...params },
+        });
+      },
+      resetNavigationPins() {
+        postMessage({
+          action: MapActions.RESET_NAVIGATION_PINS,
+        });
+      },
+      setCurrentLocationFromBlock(locationId) {
+        postMessage({
+          action: MapActions.SET_CURRENT_LOCATION_FROM_BLOCK,
+          payload: { locationId },
+        });
+      },
+      setFloorById(levelId, params) {
+        postMessage({
+          action: MapActions.SELECT_FLOOR_BY_ID,
+          payload: {
+            levelId,
+            resetZoom:
+              params?.resetZoom === undefined ? true : params.resetZoom,
+            hideLocation:
+              params?.hideLocation === undefined ? true : params.hideLocation,
+            autoMode: params?.autoMode === undefined ? false : params.autoMode,
+            willSwitchLevel:
+              params?.willSwitchLevel === undefined
+                ? true
+                : params.willSwitchLevel,
+          },
+        });
+      },
+      highlightLocation(id, opts) {
+        postMessage({
+          action: MapActions.HIGHLIGHT_LOCATION,
+          payload: {
+            id,
+            zoomEnabled:
+              opts?.zoomEnabled === undefined ? true : opts.zoomEnabled,
+            duration: opts?.duration,
           },
         });
       },

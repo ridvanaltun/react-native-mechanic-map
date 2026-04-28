@@ -30,6 +30,26 @@ export enum MapActions {
   ZOOM_TO = 'zoomTo',
   CHANGE_COLORS = 'changeColors',
   RELOAD = 'reload',
+  /** `switchLevelToId` — floor by level id instead of floor number */
+  SELECT_FLOOR_BY_ID = 'selectFloorById',
+  /** Single-location highlight (`highlightLocation`) */
+  HIGHLIGHT_LOCATION = 'highlightLocation',
+  /** Multi-segment building navigation (`showNavigationWithMultiple`) */
+  SHOW_NAVIGATION_MULTIPLE = 'showNavigationWithMultiple',
+  /** Chooses single or multi flow (`startNavigation`) */
+  START_NAVIGATION = 'startNavigation',
+  /** Replay last program (`restartNavigation`) */
+  RESTART_NAVIGATION = 'restartNavigation',
+  PREV_NAVIGATE = 'prevNavigate',
+  NEXT_NAVIGATE = 'nextNavigate',
+  PREV_BUILDING_NAVIGATE = 'prevBuildingNavigate',
+  NEXT_BUILDING_NAVIGATE = 'nextBuildingNavigate',
+  ENTER_BUILDING = 'enterBuilding',
+  EXIT_BUILDING = 'exitBuilding',
+  UPDATE_LOCALIZED = 'updateLocalized',
+  CHANGE_NAVIGATION_PINS = 'changeNavigationPins',
+  RESET_NAVIGATION_PINS = 'resetNavigationPins',
+  SET_CURRENT_LOCATION_FROM_BLOCK = 'setCurrentLocationFromBlock',
 }
 
 export enum MapResponses {

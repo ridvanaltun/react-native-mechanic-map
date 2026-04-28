@@ -270,6 +270,34 @@ export interface Route {
   };
 }
 
+/**
+ * One leg in a multi-building / outdoor program (see `showNavigationWithMultiple` / `startNavigation`).
+ */
+export interface MultipleNavigationSegment {
+  type?: string;
+  building?: string;
+  navigation: Route;
+}
+
+export type StartNavigationProgram = Route | MultipleNavigationSegment[];
+
+/** Strings passed to the user pin and tooltip localisation helpers. */
+export interface UpdateLocalizedParams {
+  youAreHereText?: string;
+  navigationText?: string;
+  closeText?: string;
+  detailText?: string;
+  enterBuildingText?: string;
+  floorText?: string;
+}
+
+/** Options shared by prev/next navigation step helpers. */
+export interface NavigateStepOptions {
+  autoMode?: boolean;
+  zoomEnabled?: boolean;
+  showPins?: boolean;
+}
+
 export type MechanicMapHandle = {
   postMessage: (params: PostMessagePayload) => void;
   init: (params: InitParams) => void;
@@ -289,9 +317,51 @@ export type MechanicMapHandle = {
       showPins?: boolean;
     }
   ) => void;
+  showNavigationWithMultiple: (
+    segments: MultipleNavigationSegment[],
+    options?: {
+      autoMode?: boolean;
+      zoomEnabled?: boolean;
+      showPins?: boolean;
+      groupIndex?: number;
+    }
+  ) => void;
+  /** Runs single-route or multi-segment navigation depending on payload shape. */
+  startNavigation: (
+    program: StartNavigationProgram,
+    options?: {
+      autoMode?: boolean;
+      zoomEnabled?: boolean;
+      showPins?: boolean;
+    }
+  ) => void;
+  restartNavigation: () => void;
+  prevNavigate: (options?: NavigateStepOptions) => void;
+  nextNavigate: (options?: NavigateStepOptions) => void;
+  prevBuildingNavigate: (options?: NavigateStepOptions) => void;
+  nextBuildingNavigate: (options?: NavigateStepOptions) => void;
+  enterBuilding: (buildingId: string) => void;
+  exitBuilding: () => void;
+  updateLocalized: (params: UpdateLocalizedParams) => void;
+  changeNavigationPins: (params: {
+    startPin?: string;
+    endPin?: string;
+  }) => void;
+  resetNavigationPins: () => void;
+  setCurrentLocationFromBlock: (locationId: LocationId) => void;
   setFloor: (
     floorNo: number,
     options?: { resetZoom?: boolean; hideLocation?: boolean }
+  ) => void;
+  /** Switch floor using level id (`switchLevelToId`). */
+  setFloorById: (
+    levelId: LevelId,
+    options?: {
+      resetZoom?: boolean;
+      hideLocation?: boolean;
+      autoMode?: boolean;
+      willSwitchLevel?: boolean;
+    }
   ) => void;
   highlightLocations: (
     ids: string[],
@@ -300,6 +370,11 @@ export type MechanicMapHandle = {
       zoomEnabled?: boolean;
       duration?: number;
     }
+  ) => void;
+  /** Highlight a single location by id (`highlightLocation`). */
+  highlightLocation: (
+    id: LocationId,
+    options?: { zoomEnabled?: boolean; duration?: number }
   ) => void;
   hideLocation: () => void;
   setCurrentLocation: (

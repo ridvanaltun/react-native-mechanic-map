@@ -805,7 +805,7 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
           strokeOptions: {
             width: 7,
           },
-          beaconMode: true,
+          beaconMode: false,
           developer: false,
           cssAnimation: false,
           mouseWheel: false,
@@ -1027,6 +1027,103 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
         mechanicMap.resetLevel();
       }
 
+      function selectFloorByLevelId(payload) {
+        mechanicMap.switchLevelToId(
+          payload.levelId,
+          payload.resetZoom !== undefined ? payload.resetZoom : true,
+          payload.hideLocation !== undefined ? payload.hideLocation : true,
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.willSwitchLevel !== undefined ? payload.willSwitchLevel : true
+        );
+      }
+
+      function highlightSingleLocation(payload) {
+        mechanicMap.highlightLocation(
+          payload.id,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.duration
+        );
+      }
+
+      function showNavigationWithMultipleCmd(payload) {
+        mechanicMap.showNavigationWithMultiple(
+          payload.navigationDetails,
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true,
+          payload.groupIndex !== undefined ? payload.groupIndex : 0
+        );
+      }
+
+      function startNavigationCmd(payload) {
+        mechanicMap.startNavigation(
+          payload.navigationDetails,
+          payload.autoMode !== undefined ? payload.autoMode : true,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true
+        );
+      }
+
+      function restartNavigationCmd() {
+        mechanicMap.restartNavigation();
+      }
+
+      function prevNavigateCmd(payload) {
+        mechanicMap.prevNavigate(
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true
+        );
+      }
+
+      function nextNavigateCmd(payload) {
+        mechanicMap.nextNavigate(
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true
+        );
+      }
+
+      function prevBuildingNavigateCmd(payload) {
+        mechanicMap.prevBuildingNavigate(
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true
+        );
+      }
+
+      function nextBuildingNavigateCmd(payload) {
+        mechanicMap.nextBuildingNavigate(
+          payload.autoMode !== undefined ? payload.autoMode : false,
+          payload.zoomEnabled !== undefined ? payload.zoomEnabled : true,
+          payload.showPins !== undefined ? payload.showPins : true
+        );
+      }
+
+      function enterBuildingCmd(payload) {
+        mechanicMap.enterBuilding(payload.buildingId);
+      }
+
+      function exitBuildingCmd() {
+        mechanicMap.exitBuilding();
+      }
+
+      function updateLocalizedCmd(payload) {
+        mechanicMap.updateLocalized(payload || {});
+      }
+
+      function changeNavigationPinsCmd(payload) {
+        mechanicMap.changeNavigationPins(payload || {});
+      }
+
+      function resetNavigationPinsCmd() {
+        mechanicMap.resetNavigationPins();
+      }
+
+      function setCurrentLocationFromBlockCmd(payload) {
+        mechanicMap.setCurrentLocationFromBlock(payload.locationId);
+      }
+
       function changeColors(payload) {
         if (payload?.background) {
           $('body').css('background-color', payload.background);
@@ -1073,6 +1170,27 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
         zoomTo: (message) => zoomTo(message.payload),
         changeColors: (message) => changeColors(message.payload),
         reload: () => location.reload(),
+        selectFloorById: (message) => selectFloorByLevelId(message.payload),
+        highlightLocation: (message) => highlightSingleLocation(message.payload),
+        showNavigationWithMultiple: (message) =>
+          showNavigationWithMultipleCmd(message.payload),
+        startNavigation: (message) => startNavigationCmd(message.payload),
+        restartNavigation: () => restartNavigationCmd(),
+        prevNavigate: (message) => prevNavigateCmd(message.payload ?? {}),
+        nextNavigate: (message) => nextNavigateCmd(message.payload ?? {}),
+        prevBuildingNavigate: (message) =>
+          prevBuildingNavigateCmd(message.payload ?? {}),
+        nextBuildingNavigate: (message) =>
+          nextBuildingNavigateCmd(message.payload ?? {}),
+        enterBuilding: (message) => enterBuildingCmd(message.payload),
+        exitBuilding: () => exitBuildingCmd(),
+        updateLocalized: (message) =>
+          updateLocalizedCmd(message.payload ?? {}),
+        changeNavigationPins: (message) =>
+          changeNavigationPinsCmd(message.payload ?? {}),
+        resetNavigationPins: () => resetNavigationPinsCmd(),
+        setCurrentLocationFromBlock: (message) =>
+          setCurrentLocationFromBlockCmd(message.payload),
       };
 
       const onMessage = (e) => {
