@@ -236,15 +236,90 @@ Exported from the package (see [`src/types.ts`](src/types.ts) / `lib/typescript`
 | Name | Role |
 | --- | --- |
 | `MechanicMapPayload` | One floor: `id`, `no`, `mapWidth`, `mapHeight`, `title`, `map` (SVG), `locations` |
-| `MechanicMapOptions` | UI/behavior: `rotate`, `initialScaleFactor`, tooltips, `colors`, etc. |
+| `MechanicMapOptions` | Passed as `options`; aligns with the embedded Mechanic Map initialization shape — see [MechanicMapOptions](#mechanicmapoptions) |
 | `MechanicMapHandle` | Ref methods |
 | `Route` | Navigation path for `showNavigation` |
 | `Location`, `LocationTypes`, `Color`, `ColorParams` | Locations and theming |
+| `MechanicMapTooltipOptions`, `MechanicMapTextOnRectMode` | Tooltip and rect-label config |
 | `EventPayload`, `LevelSwitchedData`, … | Event typing with `onEvent` |
+
+### MechanicMapOptions
+
+These fields are merged into the embedded map’s runtime configuration (the same keys the bundled map script consumes on init). Use the top-level `languageCode` prop for locale as well; you can still pass `locale` here (e.g. `availableLanguages`) if needed.
+
+**Locale & mode**
+
+| Field | Notes |
+| --- | --- |
+| `locale` | `{ language?, availableLanguages? }` — unsupported `language` values fall back to the default |
+| `mode` | `MapModes.DEFAULT` \| `PICKER` (selection / backend mode) |
+| `locationCannotBeSelected` | Opaque value from backend when a location must not be selectable |
+| `helperTexts` | e.g. `{ youAreHere: 'You are here' }` |
+
+**Viewport, scale, rotation**
+
+| Field | Notes |
+| --- | --- |
+| `rotate` | `0` \| `90` \| `180` \| `270` — non-multiples of 90 become `0` at runtime |
+| `rotatable` | Rotate map content with the SVG |
+| `initialScaleFactor`, `maxScale` | Initial zoom cap and max pinch scale |
+| `zoomLimit` | If set, `maxScale` is derived from `parseFloat(zoomLimit)` while level data is processed |
+| `animationScale` | Scales navigation path animation relative to the map |
+| `height` | Container height (px) for the map element |
+| `zoom`, `zoomToSelected`, `draggable` | Interaction toggles |
+| `mouseWheel` | Mouse wheel zoom (mainly relevant in WebView / desktop) |
+
+**Selectors** (CSS selectors into the SVG; defaults match the bundled plugin)
+
+| Field |
+| --- |
+| `selector`, `serviceSelector`, `rectSelector`, `noPointerGroupSelector` |
+| `rotatable90PathSelector`, `rotatable180PathSelector`, `rotatable270TextSelector`, `rotatable180TextSelector` |
+| `rotateServices` |
+
+**Appearance & layers**
+
+| Field | Notes |
+| --- | --- |
+| `hoverTip`, `mapFill`, `landmark`, `developer` | Feature flags |
+| `fillColor` | Global fill string consumed by the map script |
+| `strokeOptions` | `{ width?, color? }` for navigation stroke |
+| `colors` | `ColorParams` — passed through init; combine with `changeColors` for runtime updates |
+| `cssAnimation`, `cssAnimationTime` | CSS transition for navigation line; time is a base duration (ms) |
+
+**Tooltips**
+
+`tooltip` is a `MechanicMapTooltipOptions` object:
+
+| Field | Notes |
+| --- | --- |
+| `enabled` | Master switch |
+| `navigation` | `true` / `false` or `{ image?, text? }` for custom nav button |
+| `detail` | `true` / `false` or `{ text? }` |
+| `enterBuilding` | For multi-building maps: `true` / `false` or `{ text? }` |
+| `renderTemplate` | Custom tooltip HTML (`string`) or `false` (default layout) |
+
+**Rect labels (`textOnRect`)**
+
+Can be `true` / `false` or an object: `enabled`, `fontFamily`, `fillColor`, `fontSize`, `maxFontSize`, `minFontSize`, `mode` (`MechanicMapTextOnRectMode`: `'static'` \| `'dynamic'`), `availableModes`.
+
+**Animation & stack mode**
+
+| Field | Notes |
+| --- | --- |
+| `animation` | `mode`, `speedFactor`, `frequencyFactor`, `stackAnimation`, `debugContainer`, `availableModes`, `pointModes` |
+| `stackMode` | `true` / `false` or `{ enabled?, offset?, switchFloorTime? }` (ms) — use together with `animation.stackAnimation` when stack mode is enabled |
+
+**Other**
+
+| Field | Notes |
+| --- | --- |
+| `action` | `MapActionModes` — click behavior (`tooltip`, `zoom`, …) |
+| `smartip`, `beaconMode` | Smart / beacon behaviors in the embedded map |
 
 ## Example app
 
-Screenshots in [Showcase](#showcase) are from the `example/` app.
+Screenshots in [Showcase](#showcase) are from the `example/` app. Open **Map options** to toggle `MechanicMapOptions` (rotation, tooltips, animation, stack mode, layout fields, etc.) against the bundled fixtures.
 
 **Local library (`file:..`)**
 

@@ -1,14 +1,20 @@
 import {
+  MapActionModes,
   MapAnimationModes,
+  MapModes,
   type MechanicMapOptions,
 } from 'react-native-mechanic-map';
 
 export function createDefaultDemoMapOptions(): MechanicMapOptions {
   return {
+    mode: MapModes.DEFAULT,
+    action: MapActionModes.TOOLTIP,
     rotate: 90,
     initialScaleFactor: 1.25,
     draggable: true,
     zoom: true,
+    zoomToSelected: true,
+    mouseWheel: false,
     landmark: false,
     developer: false,
     hoverTip: false,

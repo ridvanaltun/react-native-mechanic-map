@@ -19,11 +19,27 @@ type HEX = `#${string}`;
 
 export type Color = RGB | RGBA | HEX;
 
+/** Allowed values for `textOnRect.mode`. */
+export type MechanicMapTextOnRectMode = 'static' | 'dynamic';
+
 /**
- * Map rotation in degrees. Core (`map.js`) keeps only multiples of 90 in \[0, 360).
+ * Map rotation in degrees. The embedded map keeps only multiples of 90 in \[0, 360).
  * Any other numeric input is treated as 0 at runtime.
  */
 export type MechanicMapRotateDegrees = 0 | 90 | 180 | 270;
+
+/**
+ * Tooltip UI options passed through to the WebView map.
+ * When a key is an object, the map renders custom labels / images for that control.
+ */
+export interface MechanicMapTooltipOptions {
+  enabled?: boolean;
+  navigation?: boolean | { image?: string; text?: string };
+  detail?: boolean | { text?: string };
+  enterBuilding?: boolean | { text?: string };
+  /** Custom HTML fragment for the tooltip shell; requires the element ids the template expects. */
+  renderTemplate?: string | false;
+}
 
 export interface Location {
   id: LocationId;
@@ -107,48 +123,99 @@ export interface ColorParams {
   };
 }
 
+/**
+ * Initialization options forwarded to the embedded Mechanic Map (`init` payload).
+ * Fields mirror what the bundled script reads during setup and level processing.
+ */
 export interface MechanicMapOptions {
+  /** Merged with top-level `language` from the React Native `init` message. */
+  locale?: {
+    language?: string;
+    availableLanguages?: string[];
+  };
   mode?: MapModes;
+  /** When set by the backend payload, marks locations that must not be selectable. */
+  locationCannotBeSelected?: unknown;
+  helperTexts?: {
+    youAreHere?: string;
+  };
   action?: MapActionModes;
   initialScaleFactor?: number;
+  /** If set, `maxScale` is derived from `parseFloat(zoomLimit)` when levels are processed. */
+  zoomLimit?: string | number;
   maxScale?: number;
+  /** Scales navigation line animation relative to the map viewport. */
+  animationScale?: number;
   rotate?: MechanicMapRotateDegrees;
+  /** When `true`, map content is rotated together with the SVG. */
+  rotatable?: boolean;
   selector?: string;
   serviceSelector?: string;
-  rectSelector?: string;
   rotateServices?: boolean;
+  /** CSS selectors for rotated path / label layers (defaults match the bundled plugin). */
+  rotatable90PathSelector?: string;
+  rotatable180PathSelector?: string;
+  rotatable270TextSelector?: string;
+  rotatable180TextSelector?: string;
+  rectSelector?: string;
+  /** Elements matching this selector do not receive pointer events (e.g. decorative groups). */
+  noPointerGroupSelector?: string;
   draggable?: boolean;
   landmark?: boolean;
   developer?: boolean;
+  /** Container height in px (applied to the root `.svg-map-element`). */
+  height?: number;
   zoom?: boolean;
   zoomToSelected?: boolean;
   hoverTip?: boolean;
   cssAnimation?: boolean;
-  textOnRect?: {
-    fontFamily?: string;
-    fillColor?: string;
-    fontSize: number;
-  };
+  /** Duration base for CSS animation (ms); combined with path length for transition timing. */
+  cssAnimationTime?: number;
+  /** Disables mouse wheel zoom in WebView / desktop environments. */
+  mouseWheel?: boolean;
+  /** Global fill helper string passed into the map script. */
+  fillColor?: string;
+  textOnRect?:
+    | boolean
+    | {
+        enabled?: boolean;
+        fontFamily?: string;
+        /** Used on web; RN examples often set this for rect label color. */
+        fillColor?: string;
+        fontSize?: number;
+        maxFontSize?: number;
+        minFontSize?: number;
+        mode?: MechanicMapTextOnRectMode;
+        availableModes?: MechanicMapTextOnRectMode[];
+      };
   strokeOptions?: {
     width?: number;
     color?: string;
   };
   mapFill?: boolean;
-  tooltip?: {
-    enabled: boolean;
-    navigation?: boolean;
-    detail?: boolean;
-  };
+  tooltip?: MechanicMapTooltipOptions;
   smartip?: boolean;
   animation?: {
     mode?: MapAnimationModes;
     speedFactor?: number;
     frequencyFactor?: number;
     stackAnimation?: boolean;
+    debugContainer?: string;
+    /** Invalid `animation.mode` values fall back to the default; optional allow-list override. */
+    availableModes?: readonly MapAnimationModes[];
+    pointModes?: readonly string[];
   };
-  stackMode?: {
-    offset: number;
-  };
+  /**
+   * Stack / multi-floor preview mode. Accepts a boolean shortcut or a full object
+   * (`enabled`, `offset`, `switchFloorTime` in ms).
+   */
+  stackMode?:
+    | boolean
+    | {
+        enabled?: boolean;
+        offset?: number;
+        switchFloorTime?: number;
+      };
   beaconMode?: boolean;
   colors?: ColorParams;
 }
@@ -173,13 +240,13 @@ export interface MechanicMapProps extends InitParams, WebViewProps {
   onMapLoaded?: () => void;
   onNavigationCancelled?: () => void;
   onLocationHighlighted?: () => void;
-  /** Tooltip “navigate here” (core `navigationClicked`). */
+  /** Tooltip “navigate here” (from `navigationClicked` in the WebView map). */
   onTooltipNavigationClick?: (data: TooltipNavigationClickData) => void;
-  /** Tooltip “details” (core `detailClicked`). */
+  /** Tooltip “details” (`detailClicked`). */
   onTooltipDetailClick?: (data: TooltipDetailClickData) => void;
-  /** Tooltip “enter building” (core `enterBuildingClicked`). */
+  /** Tooltip “enter building” (`enterBuildingClicked`). */
   onTooltipEnterBuildingClick?: (data: TooltipEnterBuildingClickData) => void;
-  /** Tooltip close (core `closeClicked`). */
+  /** Tooltip close (`closeClicked`). */
   onTooltipCloseClick?: () => void;
   onMapError?: (data: MapScriptErrorData) => void;
 }

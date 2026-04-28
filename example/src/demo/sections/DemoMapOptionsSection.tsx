@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import type {
-  MechanicMapOptions,
-  MechanicMapRotateDegrees,
+import {
+  MapActionModes,
+  MapModes,
+  type MechanicMapOptions,
+  type MechanicMapRotateDegrees,
+  type MechanicMapTextOnRectMode,
 } from 'react-native-mechanic-map';
 
 import { Chip } from '../components/Chip';
@@ -18,6 +21,19 @@ import {
 } from '../defaultDemoMapOptions';
 
 const ROTATE_DEGREES: MechanicMapRotateDegrees[] = [0, 90, 180, 270];
+
+const MAP_ACTION_CHIP_ORDER = [
+  MapActionModes.DEFAULT,
+  MapActionModes.TOOLTIP,
+  MapActionModes.SELECT,
+  MapActionModes.ZOOM,
+  MapActionModes.NOT_EMPTY,
+] as const;
+
+const TEXT_ON_RECT_MODE_CHIPS: MechanicMapTextOnRectMode[] = [
+  'static',
+  'dynamic',
+];
 
 export function DemoMapOptionsSection({
   languageCode,
@@ -36,11 +52,14 @@ export function DemoMapOptionsSection({
     navigation: true,
     detail: true,
   };
-  const textOnRect = mapOptions.textOnRect ?? {
-    fontFamily: 'sans-serif',
-    fillColor: '#FFF',
-    fontSize: 8,
-  };
+  const textOnRect =
+    typeof mapOptions.textOnRect === 'object' && mapOptions.textOnRect !== null
+      ? mapOptions.textOnRect
+      : {
+          fontFamily: 'sans-serif',
+          fillColor: '#FFF',
+          fontSize: 8,
+        };
   const animation = mapOptions.animation ?? {};
 
   const patchTooltip = (
@@ -103,6 +122,36 @@ export function DemoMapOptionsSection({
         ))}
       </View>
 
+      <DemoFieldLabel>Map mode</DemoFieldLabel>
+      <View style={styles.chipRow}>
+        <Chip
+          label="Default"
+          selected={mapOptions.mode !== MapModes.PICKER}
+          onPress={() =>
+            setMapOptions(p => ({ ...p, mode: MapModes.DEFAULT }))
+          }
+        />
+        <Chip
+          label="Picker"
+          selected={mapOptions.mode === MapModes.PICKER}
+          onPress={() =>
+            setMapOptions(p => ({ ...p, mode: MapModes.PICKER }))
+          }
+        />
+      </View>
+
+      <DemoFieldLabel>Click action (`action`)</DemoFieldLabel>
+      <View style={styles.chipRow}>
+        {MAP_ACTION_CHIP_ORDER.map(act => (
+          <Chip
+            key={act}
+            label={act}
+            selected={mapOptions.action === act}
+            onPress={() => setMapOptions(p => ({ ...p, action: act }))}
+          />
+        ))}
+      </View>
+
       <DemoSwitchRow
         label="Draggable"
         value={mapOptions.draggable !== false}
@@ -143,6 +192,26 @@ export function DemoMapOptionsSection({
         value={!!mapOptions.smartip}
         onValueChange={v => setMapOptions(p => ({ ...p, smartip: v }))}
       />
+      <DemoSwitchRow
+        label="Zoom to selected"
+        value={mapOptions.zoomToSelected !== false}
+        onValueChange={v => setMapOptions(p => ({ ...p, zoomToSelected: v }))}
+      />
+      <DemoSwitchRow
+        label="Rotatable content"
+        value={!!mapOptions.rotatable}
+        onValueChange={v => setMapOptions(p => ({ ...p, rotatable: v }))}
+      />
+      <DemoSwitchRow
+        label="Mouse wheel zoom"
+        value={mapOptions.mouseWheel !== false}
+        onValueChange={v => setMapOptions(p => ({ ...p, mouseWheel: v }))}
+      />
+      <DemoSwitchRow
+        label="CSS path animation"
+        value={mapOptions.cssAnimation !== false}
+        onValueChange={v => setMapOptions(p => ({ ...p, cssAnimation: v }))}
+      />
 
       <View style={styles.divider} />
 
@@ -160,6 +229,11 @@ export function DemoMapOptionsSection({
         label="Tooltip detail"
         value={tooltip.detail !== false}
         onValueChange={v => patchTooltip({ detail: v })}
+      />
+      <DemoSwitchRow
+        label="Tooltip enter building"
+        value={tooltip.enterBuilding === true}
+        onValueChange={v => patchTooltip({ enterBuilding: v })}
       />
 
       <View style={styles.divider} />
@@ -179,10 +253,23 @@ export function DemoMapOptionsSection({
       <DemoFieldLabel>Initial scale factor</DemoFieldLabel>
       <DemoTextInput
         keyboardType="decimal-pad"
-        value={String(mapOptions.initialScaleFactor ?? 1)}
+        placeholder="default 1"
+        value={
+          mapOptions.initialScaleFactor === undefined
+            ? ''
+            : String(mapOptions.initialScaleFactor)
+        }
         onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.initialScaleFactor;
+              return next;
+            });
+            return;
+          }
           const n = parseFloat(t);
-          if (t === '' || !Number.isFinite(n)) return;
+          if (!Number.isFinite(n)) return;
           setMapOptions(p => ({ ...p, initialScaleFactor: n }));
         }}
       />
@@ -209,22 +296,365 @@ export function DemoMapOptionsSection({
         }}
       />
 
+      <DemoFieldLabel>Zoom limit (empty = default)</DemoFieldLabel>
+      <Text style={styles.hint}>
+        The map derives max scale from this when present; leave empty to use{' '}
+        <Text style={styles.hintMono}>maxScale</Text> instead.
+      </Text>
+      <DemoTextInput
+        keyboardType="decimal-pad"
+        placeholder="e.g. 3"
+        value={
+          mapOptions.zoomLimit === undefined ? '' : String(mapOptions.zoomLimit)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.zoomLimit;
+              return next;
+            });
+            return;
+          }
+          const n = parseFloat(t);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => ({ ...p, zoomLimit: n }));
+        }}
+      />
+
+      <DemoFieldLabel>Animation scale (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        keyboardType="decimal-pad"
+        placeholder="default 1.5"
+        value={
+          mapOptions.animationScale === undefined
+            ? ''
+            : String(mapOptions.animationScale)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.animationScale;
+              return next;
+            });
+            return;
+          }
+          const n = parseFloat(t);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => ({ ...p, animationScale: n }));
+        }}
+      />
+
+      <DemoFieldLabel>CSS animation time ms (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        keyboardType="number-pad"
+        placeholder="e.g. 1000"
+        value={
+          mapOptions.cssAnimationTime === undefined
+            ? ''
+            : String(mapOptions.cssAnimationTime)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.cssAnimationTime;
+              return next;
+            });
+            return;
+          }
+          const n = parseInt(t, 10);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => ({ ...p, cssAnimationTime: n }));
+        }}
+      />
+
+      <DemoFieldLabel>Map container height px (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        keyboardType="number-pad"
+        placeholder="default 420"
+        value={
+          mapOptions.height === undefined ? '' : String(mapOptions.height)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.height;
+              return next;
+            });
+            return;
+          }
+          const n = parseInt(t, 10);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => ({ ...p, height: n }));
+        }}
+      />
+
+      <DemoFieldLabel>Helper: “You are here” (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        placeholder="You are here"
+        value={mapOptions.helperTexts?.youAreHere ?? ''}
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              if (next.helperTexts) {
+                const rest = { ...next.helperTexts };
+                delete rest.youAreHere;
+                next.helperTexts =
+                  Object.keys(rest).length > 0 ? rest : undefined;
+              }
+              return next;
+            });
+            return;
+          }
+          setMapOptions(p => ({
+            ...p,
+            helperTexts: { ...p.helperTexts, youAreHere: t },
+          }));
+        }}
+      />
+
+      <DemoFieldLabel>Fill color (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        placeholder="# hex or leave empty"
+        value={mapOptions.fillColor ?? ''}
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.fillColor;
+              return next;
+            });
+            return;
+          }
+          setMapOptions(p => ({ ...p, fillColor: t }));
+        }}
+      />
+
+      <DemoFieldLabel>Stroke width (empty = default)</DemoFieldLabel>
+      <DemoTextInput
+        keyboardType="decimal-pad"
+        placeholder="e.g. 8"
+        value={
+          mapOptions.strokeOptions?.width === undefined
+            ? ''
+            : String(mapOptions.strokeOptions.width)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const next = { ...p };
+              if (next.strokeOptions) {
+                const rest = { ...next.strokeOptions };
+                delete rest.width;
+                next.strokeOptions =
+                  Object.keys(rest).length > 0 ? rest : undefined;
+              }
+              return next;
+            });
+            return;
+          }
+          const n = parseFloat(t);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => ({
+            ...p,
+            strokeOptions: { ...p.strokeOptions, width: n },
+          }));
+        }}
+      />
+
+      <DemoSwitchRow
+        label="Stack mode"
+        value={
+          mapOptions.stackMode === true ||
+          (typeof mapOptions.stackMode === 'object' &&
+            mapOptions.stackMode != null &&
+            mapOptions.stackMode.enabled !== false)
+        }
+        onValueChange={v => {
+          if (!v) {
+            setMapOptions(p => {
+              const next = { ...p };
+              delete next.stackMode;
+              return next;
+            });
+            return;
+          }
+          setMapOptions(p => ({ ...p, stackMode: true }));
+        }}
+      />
+
       <DemoFieldLabel>Label font size (textOnRect)</DemoFieldLabel>
       <DemoTextInput
         keyboardType="number-pad"
-        value={String(textOnRect.fontSize ?? 8)}
+        placeholder="default 8"
+        value={
+          textOnRect.fontSize === undefined ? '' : String(textOnRect.fontSize)
+        }
         onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const prev =
+                typeof p.textOnRect === 'object' && p.textOnRect !== null
+                  ? p.textOnRect
+                  : {};
+              const rest = { ...prev };
+              delete rest.fontSize;
+              return {
+                ...p,
+                textOnRect: {
+                  fontFamily: 'sans-serif',
+                  fillColor: '#FFF',
+                  ...rest,
+                },
+              };
+            });
+            return;
+          }
           const n = parseInt(t, 10);
-          if (t === '' || !Number.isFinite(n)) return;
-          setMapOptions(p => ({
-            ...p,
-            textOnRect: {
-              fontFamily: 'sans-serif',
-              fillColor: '#FFF',
-              ...p.textOnRect,
-              fontSize: n,
-            },
-          }));
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => {
+            const prev =
+              typeof p.textOnRect === 'object' && p.textOnRect !== null
+                ? p.textOnRect
+                : {};
+            return {
+              ...p,
+              textOnRect: {
+                fontFamily: 'sans-serif',
+                fillColor: '#FFF',
+                ...prev,
+                fontSize: n,
+              },
+            };
+          });
+        }}
+      />
+
+      <DemoFieldLabel>Rect label mode (`textOnRect.mode`)</DemoFieldLabel>
+      <View style={styles.chipRow}>
+        {TEXT_ON_RECT_MODE_CHIPS.map(m => (
+          <Chip
+            key={m}
+            label={m}
+            selected={textOnRect.mode === m}
+            onPress={() =>
+              setMapOptions(p => {
+                const prev =
+                  typeof p.textOnRect === 'object' && p.textOnRect !== null
+                    ? p.textOnRect
+                    : {};
+                return {
+                  ...p,
+                  textOnRect: {
+                    fontFamily: 'sans-serif',
+                    fillColor: '#FFF',
+                    ...prev,
+                    mode: m,
+                  },
+                };
+              })
+            }
+          />
+        ))}
+      </View>
+
+      <DemoFieldLabel>Min / max font (static mode)</DemoFieldLabel>
+      <DemoTextInput
+        keyboardType="number-pad"
+        placeholder="minFontSize"
+        value={
+          textOnRect.minFontSize === undefined
+            ? ''
+            : String(textOnRect.minFontSize)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const prev =
+                typeof p.textOnRect === 'object' && p.textOnRect !== null
+                  ? p.textOnRect
+                  : {};
+              const rest = { ...prev };
+              delete rest.minFontSize;
+              return {
+                ...p,
+                textOnRect: {
+                  fontFamily: 'sans-serif',
+                  fillColor: '#FFF',
+                  ...rest,
+                },
+              };
+            });
+            return;
+          }
+          const n = parseInt(t, 10);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => {
+            const prev =
+              typeof p.textOnRect === 'object' && p.textOnRect !== null
+                ? p.textOnRect
+                : {};
+            return {
+              ...p,
+              textOnRect: {
+                fontFamily: 'sans-serif',
+                fillColor: '#FFF',
+                ...prev,
+                minFontSize: n,
+              },
+            };
+          });
+        }}
+      />
+      <DemoTextInput
+        keyboardType="number-pad"
+        placeholder="maxFontSize"
+        value={
+          textOnRect.maxFontSize === undefined
+            ? ''
+            : String(textOnRect.maxFontSize)
+        }
+        onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const prev =
+                typeof p.textOnRect === 'object' && p.textOnRect !== null
+                  ? p.textOnRect
+                  : {};
+              const rest = { ...prev };
+              delete rest.maxFontSize;
+              return {
+                ...p,
+                textOnRect: {
+                  fontFamily: 'sans-serif',
+                  fillColor: '#FFF',
+                  ...rest,
+                },
+              };
+            });
+            return;
+          }
+          const n = parseInt(t, 10);
+          if (!Number.isFinite(n)) return;
+          setMapOptions(p => {
+            const prev =
+              typeof p.textOnRect === 'object' && p.textOnRect !== null
+                ? p.textOnRect
+                : {};
+            return {
+              ...p,
+              textOnRect: {
+                fontFamily: 'sans-serif',
+                fillColor: '#FFF',
+                ...prev,
+                maxFontSize: n,
+              },
+            };
+          });
         }}
       />
 
@@ -248,13 +678,30 @@ export function DemoMapOptionsSection({
       <DemoFieldLabel>Animation speed factor</DemoFieldLabel>
       <DemoTextInput
         keyboardType="decimal-pad"
-        value={String(animation.speedFactor ?? 8)}
+        placeholder="default 8"
+        value={
+          animation.speedFactor === undefined
+            ? ''
+            : String(animation.speedFactor)
+        }
         onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const anim = { ...(p.animation ?? {}) };
+              delete anim.speedFactor;
+              return {
+                ...p,
+                animation:
+                  Object.keys(anim).length > 0 ? anim : undefined,
+              };
+            });
+            return;
+          }
           const n = parseFloat(t);
-          if (t === '' || !Number.isFinite(n)) return;
+          if (!Number.isFinite(n)) return;
           setMapOptions(p => ({
             ...p,
-            animation: { ...p.animation, speedFactor: n },
+            animation: { ...(p.animation ?? {}), speedFactor: n },
           }));
         }}
       />
@@ -262,13 +709,30 @@ export function DemoMapOptionsSection({
       <DemoFieldLabel>Animation frequency factor</DemoFieldLabel>
       <DemoTextInput
         keyboardType="decimal-pad"
-        value={String(animation.frequencyFactor ?? 8)}
+        placeholder="default 8"
+        value={
+          animation.frequencyFactor === undefined
+            ? ''
+            : String(animation.frequencyFactor)
+        }
         onChangeText={t => {
+          if (t.trim() === '') {
+            setMapOptions(p => {
+              const anim = { ...(p.animation ?? {}) };
+              delete anim.frequencyFactor;
+              return {
+                ...p,
+                animation:
+                  Object.keys(anim).length > 0 ? anim : undefined,
+              };
+            });
+            return;
+          }
           const n = parseFloat(t);
-          if (t === '' || !Number.isFinite(n)) return;
+          if (!Number.isFinite(n)) return;
           setMapOptions(p => ({
             ...p,
-            animation: { ...p.animation, frequencyFactor: n },
+            animation: { ...(p.animation ?? {}), frequencyFactor: n },
           }));
         }}
       />
