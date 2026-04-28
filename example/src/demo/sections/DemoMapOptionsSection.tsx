@@ -479,6 +479,7 @@ export function DemoMapOptionsSection({
             setMapOptions(p => {
               const next = { ...p };
               delete next.stackMode;
+              next.animation = { ...p.animation, stackAnimation: false };
               return next;
             });
             return;
