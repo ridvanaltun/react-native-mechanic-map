@@ -44,6 +44,10 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
       onMapLoaded,
       onNavigationCancelled,
       onLocationHighlighted,
+      onTooltipNavigationClick,
+      onTooltipDetailClick,
+      onTooltipEnterBuildingClick,
+      onTooltipCloseClick,
       onMapError,
       onError: onWebViewErrorProp,
       onHttpError: onHttpErrorProp,
@@ -295,6 +299,24 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
               break;
             case MapResponses.LOCATION_HIGHLIGHTED:
               onLocationHighlighted?.();
+              break;
+            case MapResponses.TOOLTIP_NAVIGATION_CLICKED:
+              if (mapEvent.data !== undefined) {
+                onTooltipNavigationClick?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.TOOLTIP_DETAIL_CLICKED:
+              if (mapEvent.data !== undefined) {
+                onTooltipDetailClick?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.TOOLTIP_ENTER_BUILDING_CLICKED:
+              if (mapEvent.data !== undefined) {
+                onTooltipEnterBuildingClick?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.TOOLTIP_CLOSE_CLICKED:
+              onTooltipCloseClick?.();
               break;
             case MapResponses.ERROR:
               if (mapEvent.data !== undefined) {

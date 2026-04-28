@@ -5,302 +5,275 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![license](https://img.shields.io/npm/l/react-native-mechanic-map.svg)](https://github.com/ridvanaltun/react-native-mechanic-map/blob/master/LICENSE)
 
-> React Native wrapper for Mechanic Map
+> React Native WebView wrapper for Mechanic Map: interactive floors, navigation, highlights, and imperative APIs from JavaScript.
 
-# Table of Contents <!-- omit in toc -->
+## Showcase
 
-- [Getting started](#getting-started)
-  - [Other Required Steps](#other-required-steps)
-    - [Android](#android)
-    - [iOS](#ios)
+<p align="center">
+  <img src="docs/example-1.png" alt="Showcase example 1" width="32%" />
+  <img src="docs/example-2.png" alt="Showcase example 2" width="32%" />
+  <img src="docs/example-3.png" alt="Showcase example 3" width="32%" />
+</p>
+
+<p align="center">
+  <em>Screenshots from the <a href="#example-app">example app</a> — open the action menu to try navigation, floors, and highlights.</em>
+</p>
+
+## Table of contents <!-- omit in toc -->
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Native setup](#native-setup)
+  - [Android](#android)
+  - [iOS](#ios)
 - [Usage](#usage)
-- [Example App](#example-app)
-  - [Showcase](#showcase)
+  - [Quick start](#quick-start)
+  - [Props](#props)
+  - [Events](#events)
+  - [Imperative API](#imperative-api)
+- [Types](#types)
+- [Example app](#example-app)
 - [Contributing](#contributing)
 - [License](#license)
 
-## Getting started
+## Requirements
+
+- [React Native](https://reactnative.dev/)
+- [react-native-webview](https://github.com/react-native-webview/react-native-webview) **≥ 9** (peer dependency; follow its [install guide](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Guide.md) for your RN version)
+
+## Installation
 
 ```sh
-npm install react-native-mechanic-map
+npm install react-native-mechanic-map react-native-webview
 ```
 
-**Dependencies**
+## Native setup
 
-This library needs these dependencies to be installed in your project before you can use it:
+### Android
 
-```sh
-npm install react-native-webview
-```
-
-> **_Check [react-native-webview](https://github.com/react-native-webview/react-native-webview) installation guide._**
-
-### Other Required Steps
-
-#### Android
-
-Edit `android/app/build.gradle` ( NOT `android/build.gradle` ) and add the following:
+In **`android/app/build.gradle`** (not the root `android/build.gradle`), add:
 
 ```groovy
 apply from: "../../node_modules/react-native-mechanic-map/react.gradle"
 ```
 
-Rebuild your app.
+Rebuild the app. This wires the bundled HTML asset the WebView loads.
 
-#### iOS
+### iOS
 
-This module does not require any extra step.
+No extra steps beyond `react-native-webview` setup.
 
 ## Usage
 
+### Quick start
+
+`payload` is an array of [`MechanicMapPayload`](#types) (floors: size, SVG map, locations). The map auto-initializes when the WebView finishes loading unless you set `disableAutoInit` and call `ref.current?.init(...)` yourself.
+
 ```tsx
 import * as React from 'react';
-import MechanicMap, { MechanicMapHandle } from 'react-native-mechanic-map';
+import MechanicMap, {
+  type MechanicMapHandle,
+  type MechanicMapPayload,
+} from 'react-native-mechanic-map';
 
-// ..
+const levels: MechanicMapPayload[] = [
+  /* id, no, mapWidth, mapHeight, title, map (SVG), locations */
+];
 
 const App = () => {
-  const mechanicMapRef = React.useRef<MechanicMapHandle>(null);
+  const mapRef = React.useRef<MechanicMapHandle>(null);
 
   return (
     <MechanicMap
-      ref={mechanicMapRef}
+      ref={mapRef}
       languageCode="en"
-      payload={Payload}
+      payload={levels}
       options={{
         rotate: 90,
         initialScaleFactor: 1.25,
       }}
       onMapLoaded={() => {
-        // execute when map loaded
+        mapRef.current?.setFloor(0);
       }}
-      onLevelSwitched={(newLevel) => {
-        // execute when floor switched
-      }}
-      onLocationOpened={(target) => {
-        // executes when any location opened
-      }}
-      onLocationClosed={() => {
-        // executes when any location closed
-      }}
-      onNavigationCancelled={() => {
-        // executes when navigation is cancelled
-      }}
-      onLocationHighlighted={(target) => {
-        // executes when location highlighted
-      }}
-      onMapError={(data) => {
-        // map script errors, plus invalid/unknown WebView messages, WebView load/HTTP errors,
-        // and Android render-process loss (runs after any onError / onHttpError / onRenderProcessGone you pass in)
-      }}
+      onLevelSwitched={(level) => {}}
+      onLocationOpened={(location) => {}}
+      onLocationClosed={() => {}}
+      onNavigationCancelled={() => {}}
+      onLocationHighlighted={() => {}}
+      onMapError={(data) => {}}
     />
   );
 };
 ```
 
-**Select Floor:**
+All [`WebView` props](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md) are supported and forwarded. `onMapError` also receives bridge/WebView failures (bad messages, load/HTTP errors, Android render-process loss) in addition to map script errors.
 
-```tsx
-mechanicMapRef?.current?.setFloor(floorNo: number) => void;
+### Props
+
+| Prop | Description |
+| --- | --- |
+| `payload` | `MechanicMapPayload[]` — levels to show |
+| `languageCode` | Map language (default `en`) |
+| `options` | `MechanicMapOptions` — rotation, zoom, tooltips, colors, etc. |
+| `disableAutoInit` | If `true`, skip auto `INIT`; call `ref.current.init({ payload, options, languageCode })` |
+| `onEvent` | Optional catch-all: discriminated union of all map → RN events |
+| `onMapLoaded`, `onLevelSwitched`, … | See [Events](#events) |
+| `onMapError` | Script errors and WebView/bridge failures (`MapScriptErrorData`) |
+
+Tooltip props (optional): `onTooltipNavigationClick`, `onTooltipDetailClick`, `onTooltipEnterBuildingClick`, `onTooltipCloseClick`.
+
+### Events
+
+| Callback | When |
+| --- | --- |
+| `onMapLoaded` | Map finished loading |
+| `onLevelSwitched` | Floor changed (`LevelSwitchedData`) |
+| `onLocationOpened` / `onLocationClosed` | Location panel opened/closed |
+| `onLocationHighlighted` | Highlight applied |
+| `onNavigationCancelled` | User cancelled navigation |
+| `onMapError` | Map script or WebView/bridge error |
+
+Use `onEvent` if you prefer a single handler with a typed `EventPayload` union.
+
+### Imperative API
+
+Use `React.useRef<MechanicMapHandle>(null)` and call `mapRef.current` after `onMapLoaded` (or whenever the ref is set). Signatures below match [`src/types.ts`](src/types.ts).
+
+**Floors and lifecycle**
+
+```ts
+mapRef.current?.setFloor(1, { resetZoom: true, hideLocation: true });
+mapRef.current?.addLevel(newLevel); // MechanicMapPayload — same shape as `payload[]` items
+mapRef.current?.resetLevel();
+mapRef.current?.reload();
+mapRef.current?.init({ payload: levels, languageCode: 'en', options: {} });
 ```
 
-**Navigation:**
+**Navigation**
 
-```tsx
-import type {Route} from 'react-native-mechanic-map'
+```ts
+import type { Route } from 'react-native-mechanic-map';
 
-mechanicMapRef?.current?.showNavigation(
-  route: Route,
-  options?: {
-    autoMode?: boolean,
-    zoomEnabled?: boolean,
-    showPins?: boolean,
-}) => void;
+const route = {} as Route; // from your pathfinding / backend
+
+mapRef.current?.showNavigation(route, {
+  autoMode: true,
+  zoomEnabled: true,
+  showPins: true,
+});
+mapRef.current?.closeNavigation(true);
 ```
 
-**Close Navigation:**
+**Locations**
 
-```tsx
-mechanicMapRef?.current?.closeNavigation(resetLevel?: boolean) => void;
+```ts
+import { LocationTypes } from 'react-native-mechanic-map';
+
+mapRef.current?.showLocation({
+  id: 'store-1',
+  type: LocationTypes.STORE,
+  duration: true,
+  closeNavigation: true,
+  moveAndZoom: true,
+});
+mapRef.current?.hideLocation();
+mapRef.current?.highlightLocations(['id-a', 'id-b'], {
+  type: LocationTypes.STORE,
+  zoomEnabled: true,
+  duration: 2000,
+});
 ```
 
-**Show Location:**
+**User pin (“current location”)**
 
-```tsx
-import type {LocationTypes} from 'react-native-mechanic-map'
-
-mechanicMapRef?.current?.showLocation({
-  id: string,
-  type: LocationTypes,
-  duration?: boolean,
-  closeNavigation?: boolean,
-  moveAndZoom?: boolean,
-}) => void;
+```ts
+mapRef.current?.setCurrentLocation(120, 340, { floorNo: 0 });
+mapRef.current?.showCurrentLocation();
+mapRef.current?.moveCurrentLocation(
+  [
+    { x: 100, y: 200 },
+    { x: 150, y: 220 },
+  ],
+  { floorNo: 0 }
+);
+mapRef.current?.removeCurrentLocation();
 ```
 
-**Hide Location:**
+**Viewport**
 
-```tsx
-mechanicMapRef?.current?.hideLocation() => void;
+```ts
+mapRef.current?.zoomIn();
+mapRef.current?.zoomOut();
+mapRef.current?.zoomTo(200, 300, { scale: 2, duration: 400, easing: 'easeOut' });
+mapRef.current?.moveTo(200, 300, { scale: 1.5, duration: 300 });
 ```
 
-**Highlight Locations:**
+**Appearance**
 
-```tsx
-import type {LocationTypes} from 'react-native-mechanic-map'
-
-mechanicMapRef?.current?.highlightLocations(
-  ids: string[],
-  options?: {
-    type?: LocationTypes,
-    zoomEnabled?: boolean,
-    duration?: number,
-}) => void;
+```ts
+mapRef.current?.changeColors({
+  activeStores: '#22c55e',
+  inactiveStores: '#94a3b8',
+  background: '#0f172a',
+});
 ```
 
-**Show Pin on Map:**
+**Low-level**
 
-```tsx
-mechanicMapRef.current?.setCurrentLocation(
-  x: number,
-  y: number,
-  options?: {
-    floorNo?: number,
-}) => void;
+```ts
+import { MapActions, type PostMessagePayload } from 'react-native-mechanic-map';
+
+const msg: PostMessagePayload = { action: MapActions.ZOOM_IN };
+mapRef.current?.postMessage(msg);
 ```
 
-**Focus to Pin:**
+Prefer the typed methods above; `postMessage` is for advanced or future map actions.
 
-```tsx
-mechanicMapRef.current?.showCurrentLocation() => void;
-```
+## Types
 
-**Move Pin:**
+Exported from the package (see [`src/types.ts`](src/types.ts) / `lib/typescript`):
 
-```tsx
-mechanicMapRef.current?.moveCurrentLocation(
-  coords: Array<{ x: number; y: number }>,
-  options?: {
-    floorNo?: number,
-  }
-) => void;
-```
+| Name | Role |
+| --- | --- |
+| `MechanicMapPayload` | One floor: `id`, `no`, `mapWidth`, `mapHeight`, `title`, `map` (SVG), `locations` |
+| `MechanicMapOptions` | UI/behavior: `rotate`, `initialScaleFactor`, tooltips, `colors`, etc. |
+| `MechanicMapHandle` | Ref methods |
+| `Route` | Navigation path for `showNavigation` |
+| `Location`, `LocationTypes`, `Color`, `ColorParams` | Locations and theming |
+| `EventPayload`, `LevelSwitchedData`, … | Event typing with `onEvent` |
 
-**Remove Pin:**
+## Example app
 
-```tsx
-mechanicMapRef.current?.removeCurrentLocation() => void;
-```
+Screenshots in [Showcase](#showcase) are from the `example/` app.
 
-**Zoom In:**
+**Local library (`file:..`)**
 
-```tsx
-mechanicMapRef.current?.zoomIn() => void;
-```
-
-**Zoom Out:**
-
-```tsx
-mechanicMapRef.current?.zoomOut() => void;
-```
-
-**Zoom To:**
-
-```tsx
-mechanicMapRef.current?.zoomTo(
-  x: number,
-  y: number,
-  options?: {
-    scale?: number;
-    duration?: number;
-    easing?: string;
-}) => void;
-```
-
-**Move To:**
-
-```tsx
-mechanicMapRef.current?.moveTo(
-  x: number,
-  y: number,
-  options?: {
-    scale?: number;
-    duration?: number;
-    easing?: string;
-}) => void;
-```
-
-**Add Level:**
-
-```tsx
-import type {MechanicMapPayload} from 'react-native-mechanic-map'
-
-mechanicMapRef.current?.addLevel(level: MechanicMapPayload) => void;
-```
-
-**Reset Level:**
-
-```tsx
-mechanicMapRef.current?.resetLevel() => void;
-```
-
-**Change Colors:**
-
-```tsx
-import type {Color} from 'react-native-mechanic-map'
-
-mechanicMapRef.current?.changeColors({
-  activeStores?: Color;
-  inactiveStores?: Color;
-  services?: Color;
-  background?: Color;
-  locations?: {
-    [key: string]: Color;
-}) => void;
-```
-
-**Reload:**
-
-```tsx
-mechanicMapRef?.current?.reload() => void;
-```
-
-## Example App
-
-The example app depends on the library via `"react-native-mechanic-map": "file:.."` (see `example/package.json`). After changing library `src/`, run `yarn prepare` at the repo root before publishing or when you need an up-to-date `lib/` for consumers. TypeScript in the example resolves the package through `example/tsconfig.json` paths to `../src/index.tsx` so local types stay in sync; if tooling ever looks stale, reinstall example dependencies (`yarn install` or `npm install` in `example/`).
+The example pins `"react-native-mechanic-map": "file:.."` in `example/package.json`. After editing library `src/`, run `yarn prepare` at the package root so `lib/` stays current for consumers. TS paths in `example/tsconfig.json` point at `../src/index.tsx` for local types; if editors or Metro act stale, reinstall in `example/`:
 
 ```sh
-# clone the project
+cd example
+npm install react-native-mechanic-map   # or: yarn add react-native-mechanic-map
+```
+
+**Run**
+
+```sh
 git clone https://github.com/ridvanaltun/react-native-mechanic-map.git
-
-# go into the example folder
 cd react-native-mechanic-map/example
-
-# install dependencies
-npm i
-
-# run for android
+npm install
 npm run android
-
-# or
-
-# install pods for ios
+# iOS:
 cd ios && pod install && cd ..
-
-# run for ios
 npm run ios
 ```
 
-### Showcase
+**Published npm version**
 
-| Preview                                                           |
-| ----------------------------------------------------------------- |
-| <img src="docs/preview.png" alt="Preview Image" width="300px"  /> |
-| Test all features with action menu                                |
+To run the example against the registry instead of the parent folder, set a semver range in `example/package.json` (e.g. `"react-native-mechanic-map": "^0.6.0"`) and `npm install` in `example/`.
 
 ## Contributing
 
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

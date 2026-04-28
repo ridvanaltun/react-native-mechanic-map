@@ -50,4 +50,32 @@ describe('parseMapWebViewMessage', () => {
       failure: { reason: 'unknown_action', action: '(missing)' },
     });
   });
+
+  it('accepts tooltip navigationClicked', () => {
+    const raw = JSON.stringify({
+      action: MapResponses.TOOLTIP_NAVIGATION_CLICKED,
+      data: { locationId: 'K0_store_1' },
+    });
+    expect(parseMapWebViewMessage(raw)).toEqual({
+      ok: true,
+      payload: {
+        action: MapResponses.TOOLTIP_NAVIGATION_CLICKED,
+        data: { locationId: 'K0_store_1' },
+      },
+    });
+  });
+
+  it('accepts tooltip enterBuildingClicked', () => {
+    const raw = JSON.stringify({
+      action: MapResponses.TOOLTIP_ENTER_BUILDING_CLICKED,
+      data: { buildingId: 'B1', locationId: 'K0_store_1' },
+    });
+    expect(parseMapWebViewMessage(raw)).toEqual({
+      ok: true,
+      payload: {
+        action: MapResponses.TOOLTIP_ENTER_BUILDING_CLICKED,
+        data: { buildingId: 'B1', locationId: 'K0_store_1' },
+      },
+    });
+  });
 });

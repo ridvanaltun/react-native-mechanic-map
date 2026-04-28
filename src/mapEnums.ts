@@ -39,6 +39,10 @@ export enum MapResponses {
   LEVEL_SWITCHED = 'levelSwitched',
   LOCATION_HIGHLIGHTED = 'locationsHighlighted',
   NAVIGATION_CANCELLED = 'navigationCancelled',
+  TOOLTIP_NAVIGATION_CLICKED = 'navigationClicked',
+  TOOLTIP_DETAIL_CLICKED = 'detailClicked',
+  TOOLTIP_ENTER_BUILDING_CLICKED = 'enterBuildingClicked',
+  TOOLTIP_CLOSE_CLICKED = 'closeClicked',
   ERROR = 'error',
 }
 

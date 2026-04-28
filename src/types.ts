@@ -19,14 +19,19 @@ type HEX = `#${string}`;
 
 export type Color = RGB | RGBA | HEX;
 
+/**
+ * Map rotation in degrees. Core (`map.js`) keeps only multiples of 90 in \[0, 360).
+ * Any other numeric input is treated as 0 at runtime.
+ */
+export type MechanicMapRotateDegrees = 0 | 90 | 180 | 270;
+
 export interface Location {
   id: LocationId;
   type: LocationTypes | string;
   title: string;
-  image_url: string;
+  logo: string;
   zoom?: number;
   action?: LocationActions;
-  explanation?: string;
 }
 
 /** Shape of `data` for {@link MapResponses.ERROR} from the embedded map script. */
@@ -43,6 +48,19 @@ export type LevelSwitchedData = {
   no: number;
 };
 
+export interface TooltipNavigationClickData {
+  locationId: LocationId;
+}
+
+export interface TooltipDetailClickData {
+  locationId: LocationId;
+}
+
+export interface TooltipEnterBuildingClickData {
+  buildingId: string;
+  locationId: LocationId;
+}
+
 /**
  * Discriminated union: `data` is typed for each {@link MapResponses} value.
  * Runtime values are normalized in `parseMapWebViewMessage`.
@@ -54,6 +72,19 @@ export type EventPayload =
   | { action: MapResponses.LEVEL_SWITCHED; data?: LevelSwitchedData }
   | { action: MapResponses.LOCATION_HIGHLIGHTED; data?: unknown }
   | { action: MapResponses.NAVIGATION_CANCELLED; data?: unknown }
+  | {
+      action: MapResponses.TOOLTIP_NAVIGATION_CLICKED;
+      data?: TooltipNavigationClickData;
+    }
+  | {
+      action: MapResponses.TOOLTIP_DETAIL_CLICKED;
+      data?: TooltipDetailClickData;
+    }
+  | {
+      action: MapResponses.TOOLTIP_ENTER_BUILDING_CLICKED;
+      data?: TooltipEnterBuildingClickData;
+    }
+  | { action: MapResponses.TOOLTIP_CLOSE_CLICKED; data?: unknown }
   | { action: MapResponses.ERROR; data?: MapScriptErrorData };
 
 export interface MechanicMapPayload {
@@ -64,7 +95,6 @@ export interface MechanicMapPayload {
   title: string;
   map: string;
   locations: Location[];
-  show: boolean;
 }
 
 export interface ColorParams {
@@ -82,7 +112,7 @@ export interface MechanicMapOptions {
   action?: MapActionModes;
   initialScaleFactor?: number;
   maxScale?: number;
-  rotate?: number;
+  rotate?: MechanicMapRotateDegrees;
   selector?: string;
   serviceSelector?: string;
   rectSelector?: string;
@@ -143,6 +173,14 @@ export interface MechanicMapProps extends InitParams, WebViewProps {
   onMapLoaded?: () => void;
   onNavigationCancelled?: () => void;
   onLocationHighlighted?: () => void;
+  /** Tooltip “navigate here” (core `navigationClicked`). */
+  onTooltipNavigationClick?: (data: TooltipNavigationClickData) => void;
+  /** Tooltip “details” (core `detailClicked`). */
+  onTooltipDetailClick?: (data: TooltipDetailClickData) => void;
+  /** Tooltip “enter building” (core `enterBuildingClicked`). */
+  onTooltipEnterBuildingClick?: (data: TooltipEnterBuildingClickData) => void;
+  /** Tooltip close (core `closeClicked`). */
+  onTooltipCloseClick?: () => void;
   onMapError?: (data: MapScriptErrorData) => void;
 }
 

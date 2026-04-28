@@ -4,6 +4,9 @@ import type {
   Location,
   LevelSwitchedData,
   MapScriptErrorData,
+  TooltipDetailClickData,
+  TooltipEnterBuildingClickData,
+  TooltipNavigationClickData,
 } from './types';
 
 const VALID_RESPONSE_ACTIONS = new Set<string>(
@@ -34,6 +37,20 @@ function bridgeDataToEventPayload(
     case MapResponses.LOCATION_HIGHLIGHTED:
       return { action, data };
     case MapResponses.NAVIGATION_CANCELLED:
+      return { action, data };
+    case MapResponses.TOOLTIP_NAVIGATION_CLICKED:
+      return {
+        action,
+        data: data as TooltipNavigationClickData | undefined,
+      };
+    case MapResponses.TOOLTIP_DETAIL_CLICKED:
+      return { action, data: data as TooltipDetailClickData | undefined };
+    case MapResponses.TOOLTIP_ENTER_BUILDING_CLICKED:
+      return {
+        action,
+        data: data as TooltipEnterBuildingClickData | undefined,
+      };
+    case MapResponses.TOOLTIP_CLOSE_CLICKED:
       return { action, data };
     case MapResponses.ERROR:
       return { action, data: data as MapScriptErrorData | undefined };
