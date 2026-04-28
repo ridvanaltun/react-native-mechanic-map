@@ -369,8 +369,8 @@ Can be `true` / `false` or an object: `enabled`, `fontFamily`, `fillColor`, `fon
 
 | Field | Notes |
 | --- | --- |
-| `animation` | `mode`, `speedFactor`, `frequencyFactor`, `stackAnimation`, `debugContainer`, `availableModes`, `pointModes` |
-| `stackMode` | `true` / `false` or `{ enabled?, offset?, switchFloorTime? }` (ms) — use together with `animation.stackAnimation` when stack mode is enabled |
+| `animation` | `mode`, `speedFactor`, `frequencyFactor`, `stackAnimation`, `debugContainer`, `availableModes`, `pointModes` — `stackAnimation` requires an enabled `stackMode` or init will not complete |
+| `stackMode` | `true` / `false` or `{ enabled?, offset?, switchFloorTime? }` (ms) — must be on when `animation.stackAnimation` is `true` |
 
 **Other**
 

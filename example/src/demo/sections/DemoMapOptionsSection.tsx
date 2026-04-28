@@ -744,9 +744,15 @@ export function DemoMapOptionsSection({
           setMapOptions(p => ({
             ...p,
             animation: { ...p.animation, stackAnimation: v },
+            /* Embedded map aborts init if stackAnimation is on but stackMode is off. */
+            ...(v ? { stackMode: true } : {}),
           }))
         }
       />
+      <Text style={styles.hint}>
+        Stack animation requires stack mode; turning this on also enables{' '}
+        <Text style={styles.hintMono}>stackMode</Text>.
+      </Text>
 
       <View style={styles.divider} />
 

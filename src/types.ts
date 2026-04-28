@@ -199,6 +199,10 @@ export interface MechanicMapOptions {
     mode?: MapAnimationModes;
     speedFactor?: number;
     frequencyFactor?: number;
+    /**
+     * When `true`, `stackMode.enabled` must be set; the map aborts init if stack
+     * animation is on without stack mode.
+     */
     stackAnimation?: boolean;
     debugContainer?: string;
     /** Invalid `animation.mode` values fall back to the default; optional allow-list override. */
