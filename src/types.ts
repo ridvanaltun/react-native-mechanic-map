@@ -77,6 +77,48 @@ export interface TooltipEnterBuildingClickData {
   locationId: LocationId;
 }
 
+/** Payload for {@link MapResponses.LEVELS_READY} / core `levelsReady`. */
+export interface LevelsReadyPayload {
+  levels: unknown[];
+  levelId: string;
+  isOutdoor: boolean;
+}
+
+/** Payload for {@link MapResponses.LEVEL_READY} / core `levelReady`. */
+export interface LevelReadyPayload {
+  levelId: string;
+  levelNo: number;
+  isOutdoor: boolean;
+}
+
+/**
+ * Payload for {@link MapResponses.NAVIGATION_STATE} / core `navigation`
+ * (current/prev/next floor and multi-building hints).
+ */
+export interface NavigationStatePayload {
+  prevLevelId?: string;
+  currentLevelId?: string;
+  nextLevelId?: string;
+  isStartFloor?: boolean;
+  isEndFloor?: boolean;
+  levelChanger?: unknown;
+  hasPrevNavigate?: boolean;
+  hasNextNavigate?: boolean;
+  prevBuildingId?: string | boolean;
+  nextBuildingId?: string | boolean;
+  hasPrevBuildingNavigate?: boolean;
+  hasNextBuildingNavigate?: boolean;
+}
+
+/** Async result from bridge query commands (`calculateSP`, `getLevels`, …). */
+export interface BridgeResultPayload {
+  requestId: string;
+  command: string;
+  ok: boolean;
+  result?: unknown;
+  error?: string;
+}
+
 /**
  * Discriminated union: `data` is typed for each {@link MapResponses} value.
  * Runtime values are normalized in `parseMapWebViewMessage`.
@@ -101,7 +143,17 @@ export type EventPayload =
       data?: TooltipEnterBuildingClickData;
     }
   | { action: MapResponses.TOOLTIP_CLOSE_CLICKED; data?: unknown }
-  | { action: MapResponses.ERROR; data?: MapScriptErrorData };
+  | { action: MapResponses.ERROR; data?: MapScriptErrorData }
+  | { action: MapResponses.LEVELS_READY; data?: LevelsReadyPayload }
+  | { action: MapResponses.LEVEL_READY; data?: LevelReadyPayload }
+  | {
+      action: MapResponses.NAVIGATION_STATE;
+      data?: NavigationStatePayload | null;
+    }
+  | { action: MapResponses.BEACON_CLICKED; data?: unknown }
+  | { action: MapResponses.POSITION_CHANGED; data?: unknown }
+  | { action: MapResponses.LOCATION_HIGHLIGHTED_SINGLE; data?: unknown }
+  | { action: MapResponses.BRIDGE_RESULT; data?: BridgeResultPayload };
 
 export interface MechanicMapPayload {
   id: LevelId;
@@ -221,6 +273,8 @@ export interface MechanicMapOptions {
         switchFloorTime?: number;
       };
   beaconMode?: boolean;
+  /** When `false`, service layers are not wired (core `servicesEnabled`). Default in RN HTML is `true`; override if needed. */
+  servicesEnabled?: boolean;
   colors?: ColorParams;
 }
 
@@ -243,7 +297,16 @@ export interface MechanicMapProps extends InitParams, WebViewProps {
   onLocationClosed?: () => void;
   onMapLoaded?: () => void;
   onNavigationCancelled?: () => void;
+  /** Fires for batch highlight (`locationsHighlighted`). */
   onLocationHighlighted?: () => void;
+  onLevelsReady?: (data: LevelsReadyPayload) => void;
+  onLevelReady?: (data: LevelReadyPayload) => void;
+  /** Active navigation step / floor context (core `navigation` event). */
+  onNavigationState?: (data: NavigationStatePayload | null) => void;
+  onBeaconClicked?: (data: unknown) => void;
+  onPositionChanged?: (data: unknown) => void;
+  /** Single-location highlight (core `locationHighlighted`), distinct from batch {@link onLocationHighlighted}. */
+  onSingleLocationHighlighted?: (data: unknown) => void;
   /** Tooltip “navigate here” (from `navigationClicked` in the WebView map). */
   onTooltipNavigationClick?: (data: TooltipNavigationClickData) => void;
   /** Tooltip “details” (`detailClicked`). */
@@ -416,4 +479,27 @@ export type MechanicMapHandle = {
   resetLevel: () => void;
   changeColors: (colors: ColorParams) => void;
   reload: () => void;
+  calculateSP: (
+    startLocation: LocationId,
+    endLocation: LocationId,
+    routeType?: string
+  ) => Promise<unknown>;
+  calculateSP_v2: (
+    startLocation: LocationId,
+    endLocation: LocationId,
+    routeType?: string
+  ) => Promise<unknown>;
+  getLevels: () => Promise<unknown>;
+  getNodes: () => Promise<unknown>;
+  getPaths: () => Promise<unknown>;
+  isMultiBuilding: () => Promise<boolean>;
+  getNavigationDetails: (offset?: number) => Promise<unknown>;
+  prevLevelId: () => Promise<string | undefined>;
+  nextLevelId: () => Promise<string | undefined>;
+  hasPrevNavigate: () => Promise<boolean>;
+  hasNextNavigate: () => Promise<boolean>;
+  prevBuildingId: () => Promise<string | boolean | undefined>;
+  nextBuildingId: () => Promise<string | boolean | undefined>;
+  hasPrevBuildingNavigate: () => Promise<boolean>;
+  hasNextBuildingNavigate: () => Promise<boolean>;
 };

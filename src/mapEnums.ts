@@ -50,6 +50,23 @@ export enum MapActions {
   CHANGE_NAVIGATION_PINS = 'changeNavigationPins',
   RESET_NAVIGATION_PINS = 'resetNavigationPins',
   SET_CURRENT_LOCATION_FROM_BLOCK = 'setCurrentLocationFromBlock',
+  /** Shortest-path v1 (`calculateSP`); responds via {@link MapResponses.BRIDGE_RESULT}. */
+  CALCULATE_SP = 'calculateSP',
+  /** Shortest-path v2 (`calculateSP_v2`); responds via {@link MapResponses.BRIDGE_RESULT}. */
+  CALCULATE_SP_V2 = 'calculateSP_v2',
+  GET_LEVELS = 'getLevels',
+  GET_NODES = 'getNodes',
+  GET_PATHS = 'getPaths',
+  IS_MULTI_BUILDING = 'isMultiBuilding',
+  GET_NAVIGATION_DETAILS = 'getNavigationDetails',
+  PREV_LEVEL_ID = 'prevLevelId',
+  NEXT_LEVEL_ID = 'nextLevelId',
+  HAS_PREV_NAVIGATE = 'hasPrevNavigate',
+  HAS_NEXT_NAVIGATE = 'hasNextNavigate',
+  PREV_BUILDING_ID = 'prevBuildingId',
+  NEXT_BUILDING_ID = 'nextBuildingId',
+  HAS_PREV_BUILDING_NAVIGATE = 'hasPrevBuildingNavigate',
+  HAS_NEXT_BUILDING_NAVIGATE = 'hasNextBuildingNavigate',
 }
 
 export enum MapResponses {
@@ -64,6 +81,18 @@ export enum MapResponses {
   TOOLTIP_ENTER_BUILDING_CLICKED = 'enterBuildingClicked',
   TOOLTIP_CLOSE_CLICKED = 'closeClicked',
   ERROR = 'error',
+  /** All floors processed — floor picker (`levelsReady` in core). */
+  LEVELS_READY = 'levelsReady',
+  /** One floor SVG ready (`levelReady` in core). */
+  LEVEL_READY = 'levelReady',
+  /** Navigation UI state during active routing (`navigation` in core). */
+  NAVIGATION_STATE = 'navigation',
+  BEACON_CLICKED = 'beaconClicked',
+  POSITION_CHANGED = 'positionChanged',
+  /** Single-location highlight (`locationHighlighted` in core; plural batch remains {@link LOCATION_HIGHLIGHTED}). */
+  LOCATION_HIGHLIGHTED_SINGLE = 'locationHighlighted',
+  /** Async reply for {@link MapActions} query commands (calculateSP, getLevels, …). */
+  BRIDGE_RESULT = 'bridgeResult',
 }
 
 export enum MapModes {

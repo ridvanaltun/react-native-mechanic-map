@@ -133,12 +133,18 @@ Tooltip props (optional): `onTooltipNavigationClick`, `onTooltipDetailClick`, `o
 | --- | --- |
 | `onMapLoaded` | Map finished loading |
 | `onLevelSwitched` | Floor changed (`LevelSwitchedData`) |
+| `onLevelsReady` | All floors processed — floor list ready (`LevelsReadyPayload`) |
+| `onLevelReady` | One floor SVG loaded (`LevelReadyPayload`) |
+| `onNavigationState` | During routing — prev/next floor & multi-building flags (`NavigationStatePayload`) |
 | `onLocationOpened` / `onLocationClosed` | Location panel opened/closed |
-| `onLocationHighlighted` | Highlight applied |
+| `onLocationHighlighted` | Batch highlight finished (`locationsHighlighted`) |
+| `onSingleLocationHighlighted` | One location highlighted (`locationHighlighted` in core) |
+| `onBeaconClicked` | Beacon marker tapped (`beaconMode`) |
+| `onPositionChanged` | Map pan/zoom position update |
 | `onNavigationCancelled` | User cancelled navigation |
 | `onMapError` | Map script or WebView/bridge error |
 
-Use `onEvent` if you prefer a single handler with a typed `EventPayload` union.
+Use `onEvent` if you prefer a single handler with a typed `EventPayload` union (includes `bridgeResult` for async query replies if you handle promises manually).
 
 ### Imperative API
 
@@ -209,6 +215,24 @@ mapRef.current?.updateLocalized({
 } as UpdateLocalizedParams);
 mapRef.current?.changeNavigationPins({ startPin: 'https://.../a.png' });
 mapRef.current?.resetNavigationPins();
+```
+
+**Shortest-path & data queries (core parity)**
+
+These return Promises that resolve when the WebView posts `bridgeResult` (same helpers as `map.calculateSP`, `map.getLevels()`, … in web):
+
+```ts
+const route = await mapRef.current?.calculateSP('K0_kiosk_01', 'K1_store_50', 'auto');
+const routeV2 = await mapRef.current?.calculateSP_v2('KE1_kiosk_09', 'KE7_parkingspot_01', 'auto');
+
+const levels = await mapRef.current?.getLevels();
+const nodes = await mapRef.current?.getNodes();
+const paths = await mapRef.current?.getPaths();
+const multi = await mapRef.current?.isMultiBuilding();
+
+const segment = await mapRef.current?.getNavigationDetails(0);
+const prevId = await mapRef.current?.prevLevelId();
+const canPrev = await mapRef.current?.hasPrevNavigate();
 ```
 
 **Floor by level id & single highlight**
@@ -306,7 +330,7 @@ Exported from the package (see [`src/types.ts`](src/types.ts) / `lib/typescript`
 | `MechanicMapTooltipOptions`, `MechanicMapTextOnRectMode` | Tooltip and rect-label config |
 | `MultipleNavigationSegment`, `StartNavigationProgram` | Multi-leg navigation programs |
 | `UpdateLocalizedParams`, `NavigateStepOptions` | Localization and nav-step options |
-| `EventPayload`, `LevelSwitchedData`, … | Event typing with `onEvent` |
+| `EventPayload`, `LevelsReadyPayload`, `NavigationStatePayload`, `BridgeResultPayload`, `LevelSwitchedData`, … | Event typing with `onEvent` |
 
 ### MechanicMapOptions
 
@@ -380,6 +404,7 @@ Can be `true` / `false` or an object: `enabled`, `fontFamily`, `fillColor`, `fon
 | Field | Notes |
 | --- | --- |
 | `action` | `MapActionModes` — click behavior (`tooltip`, `zoom`, …) |
+| `servicesEnabled` | When `false`, service POIs/layers are not wired (default in the bundled RN HTML is `true`; override to hide services) |
 | `smartip`, `beaconMode` | Smart / beacon behaviors in the embedded map |
 
 ## Example app

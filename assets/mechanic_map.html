@@ -773,6 +773,58 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
       let mechanicMap;
       let $mapContainer = $('#svg-map');
 
+      /** Clone for RN postMessage (drops functions / circular refs). */
+      function rnCloneForPostMessage(value) {
+        if (value === undefined || value === null) {
+          return value;
+        }
+        try {
+          return JSON.parse(JSON.stringify(value));
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function ensureMechanicMap() {
+        if (!mechanicMap) {
+          throw new Error('Map not initialized');
+        }
+      }
+
+      function postBridgeResult(requestId, command, ok, result, error) {
+        if (!requestId) {
+          return;
+        }
+        var data = ok
+          ? { requestId: requestId, command: command, ok: true, result: result }
+          : {
+              requestId: requestId,
+              command: command,
+              ok: false,
+              error: error || 'Unknown error',
+            };
+        rnPostMessage({ action: 'bridgeResult', data: data });
+      }
+
+      function runBridgeQuery(requestId, command, fn) {
+        if (!requestId) {
+          return;
+        }
+        try {
+          ensureMechanicMap();
+          var result = fn();
+          postBridgeResult(requestId, command, true, result, undefined);
+        } catch (err) {
+          postBridgeResult(
+            requestId,
+            command,
+            false,
+            undefined,
+            err && err.message ? err.message : String(err)
+          );
+        }
+      }
+
       function initFunction(payload) {
 
         // change body color
@@ -819,6 +871,7 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
             frequencyFactor: 8,
           },
           stackMode: false,
+          servicesEnabled: true,
           data: {
             levels: payload.levels,
             mapWidth: payload.levels[0].mapWidth,
@@ -907,6 +960,62 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
 
         $mapContainer.on('closeClicked', () => {
           rnPostMessage({ action: 'closeClicked' });
+        });
+
+        $mapContainer.on(
+          'levelsReady',
+          function (event, levels, levelId, isOutdoor) {
+            rnPostMessage({
+              action: 'levelsReady',
+              data: {
+                levels: rnCloneForPostMessage(levels) || [],
+                levelId: levelId,
+                isOutdoor: !!isOutdoor,
+              },
+            });
+          }
+        );
+
+        $mapContainer.on(
+          'levelReady',
+          function (event, levelId, levelNo, isOutdoor) {
+            rnPostMessage({
+              action: 'levelReady',
+              data: {
+                levelId: levelId,
+                levelNo: levelNo,
+                isOutdoor: !!isOutdoor,
+              },
+            });
+          }
+        );
+
+        $mapContainer.on('navigation', function (event, params) {
+          rnPostMessage({
+            action: 'navigation',
+            data: rnCloneForPostMessage(params),
+          });
+        });
+
+        $mapContainer.on('beaconClicked', function (event, beaconData) {
+          rnPostMessage({
+            action: 'beaconClicked',
+            data: rnCloneForPostMessage(beaconData),
+          });
+        });
+
+        $mapContainer.on('positionChanged', function (event, payload) {
+          rnPostMessage({
+            action: 'positionChanged',
+            data: rnCloneForPostMessage(payload),
+          });
+        });
+
+        $mapContainer.on('locationHighlighted', function (event, location) {
+          rnPostMessage({
+            action: 'locationHighlighted',
+            data: rnCloneForPostMessage(location),
+          });
         });
       }
 
@@ -1124,6 +1233,120 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
         mechanicMap.setCurrentLocationFromBlock(payload.locationId);
       }
 
+      function calculateSPCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'calculateSP', function () {
+          return mechanicMap.calculateSP(
+            p.startLocation,
+            p.endLocation,
+            p.routeType !== undefined ? p.routeType : 'auto'
+          );
+        });
+      }
+
+      function calculateSP_v2Cmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'calculateSP_v2', function () {
+          return mechanicMap.calculateSP_v2(
+            p.startLocation,
+            p.endLocation,
+            p.routeType !== undefined ? p.routeType : 'auto'
+          );
+        });
+      }
+
+      function getLevelsCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'getLevels', function () {
+          return mechanicMap.getLevels();
+        });
+      }
+
+      function getNodesCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'getNodes', function () {
+          return mechanicMap.getNodes();
+        });
+      }
+
+      function getPathsCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'getPaths', function () {
+          return mechanicMap.getPaths();
+        });
+      }
+
+      function isMultiBuildingCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'isMultiBuilding', function () {
+          return mechanicMap.isMultiBuilding();
+        });
+      }
+
+      function getNavigationDetailsCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'getNavigationDetails', function () {
+          var off = p.offset !== undefined ? p.offset : 0;
+          return mechanicMap.getNavigationDetails(off);
+        });
+      }
+
+      function prevLevelIdCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'prevLevelId', function () {
+          return mechanicMap.prevLevelId();
+        });
+      }
+
+      function nextLevelIdCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'nextLevelId', function () {
+          return mechanicMap.nextLevelId();
+        });
+      }
+
+      function hasPrevNavigateCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'hasPrevNavigate', function () {
+          return mechanicMap.hasPrevNavigate();
+        });
+      }
+
+      function hasNextNavigateCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'hasNextNavigate', function () {
+          return mechanicMap.hasNextNavigate();
+        });
+      }
+
+      function prevBuildingIdCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'prevBuildingId', function () {
+          return mechanicMap.prevBuildingId();
+        });
+      }
+
+      function nextBuildingIdCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'nextBuildingId', function () {
+          return mechanicMap.nextBuildingId();
+        });
+      }
+
+      function hasPrevBuildingNavigateCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'hasPrevBuildingNavigate', function () {
+          return mechanicMap.hasPrevBuildingNavigate();
+        });
+      }
+
+      function hasNextBuildingNavigateCmd(message) {
+        var p = message.payload || {};
+        runBridgeQuery(p.requestId, 'hasNextBuildingNavigate', function () {
+          return mechanicMap.hasNextBuildingNavigate();
+        });
+      }
+
       function changeColors(payload) {
         if (payload?.background) {
           $('body').css('background-color', payload.background);
@@ -1191,6 +1414,23 @@ var K=I(1),Q=(I(12),I(/*! hammerjs */61)),q=I(/*! imports-loader?define=>false!j
         resetNavigationPins: () => resetNavigationPinsCmd(),
         setCurrentLocationFromBlock: (message) =>
           setCurrentLocationFromBlockCmd(message.payload),
+        calculateSP: (message) => calculateSPCmd(message),
+        calculateSP_v2: (message) => calculateSP_v2Cmd(message),
+        getLevels: (message) => getLevelsCmd(message),
+        getNodes: (message) => getNodesCmd(message),
+        getPaths: (message) => getPathsCmd(message),
+        isMultiBuilding: (message) => isMultiBuildingCmd(message),
+        getNavigationDetails: (message) => getNavigationDetailsCmd(message),
+        prevLevelId: (message) => prevLevelIdCmd(message),
+        nextLevelId: (message) => nextLevelIdCmd(message),
+        hasPrevNavigate: (message) => hasPrevNavigateCmd(message),
+        hasNextNavigate: (message) => hasNextNavigateCmd(message),
+        prevBuildingId: (message) => prevBuildingIdCmd(message),
+        nextBuildingId: (message) => nextBuildingIdCmd(message),
+        hasPrevBuildingNavigate: (message) =>
+          hasPrevBuildingNavigateCmd(message),
+        hasNextBuildingNavigate: (message) =>
+          hasNextBuildingNavigateCmd(message),
       };
 
       const onMessage = (e) => {

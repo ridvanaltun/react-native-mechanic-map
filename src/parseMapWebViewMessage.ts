@@ -1,9 +1,13 @@
 import { MapResponses } from './mapEnums';
 import type {
+  BridgeResultPayload,
   EventPayload,
+  LevelReadyPayload,
+  LevelsReadyPayload,
   Location,
   LevelSwitchedData,
   MapScriptErrorData,
+  NavigationStatePayload,
   TooltipDetailClickData,
   TooltipEnterBuildingClickData,
   TooltipNavigationClickData,
@@ -54,6 +58,23 @@ function bridgeDataToEventPayload(
       return { action, data };
     case MapResponses.ERROR:
       return { action, data: data as MapScriptErrorData | undefined };
+    case MapResponses.LEVELS_READY:
+      return { action, data: data as LevelsReadyPayload | undefined };
+    case MapResponses.LEVEL_READY:
+      return { action, data: data as LevelReadyPayload | undefined };
+    case MapResponses.NAVIGATION_STATE:
+      return {
+        action,
+        data: data as NavigationStatePayload | null | undefined,
+      };
+    case MapResponses.BEACON_CLICKED:
+      return { action, data };
+    case MapResponses.POSITION_CHANGED:
+      return { action, data };
+    case MapResponses.LOCATION_HIGHLIGHTED_SINGLE:
+      return { action, data };
+    case MapResponses.BRIDGE_RESULT:
+      return { action, data: data as BridgeResultPayload | undefined };
     default: {
       const _exhaustive: never = action;
       return _exhaustive;

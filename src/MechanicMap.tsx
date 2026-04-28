@@ -31,6 +31,18 @@ function reportBridgeFailure(
   });
 }
 
+function createBridgeRequestId(): string {
+  try {
+    const g = global as { crypto?: { randomUUID?: () => string } };
+    if (g.crypto?.randomUUID) {
+      return g.crypto.randomUUID();
+    }
+  } catch {
+    /* ignore */
+  }
+  return `rn-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
   (
     {
@@ -45,6 +57,12 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
       onMapLoaded,
       onNavigationCancelled,
       onLocationHighlighted,
+      onLevelsReady,
+      onLevelReady,
+      onNavigationState,
+      onBeaconClicked,
+      onPositionChanged,
+      onSingleLocationHighlighted,
       onTooltipNavigationClick,
       onTooltipDetailClick,
       onTooltipEnterBuildingClick,
@@ -58,11 +76,34 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
     ref
   ) => {
     const webViewRef = useRef<WebView>(null);
+    const bridgePendingRef = useRef(
+      new Map<
+        string,
+        { resolve: (v: unknown) => void; reject: (e: Error) => void }
+      >()
+    );
 
     const postMessage = (message: PostMessagePayload) => {
       const messageStr = JSON.stringify(message);
       webViewRef.current?.postMessage(messageStr);
     };
+
+    function bridgeCall<T>(
+      command: MapActions,
+      cmdPayload: Record<string, unknown> = {}
+    ): Promise<T> {
+      const requestId = createBridgeRequestId();
+      return new Promise<T>((resolve, reject) => {
+        bridgePendingRef.current.set(requestId, {
+          resolve: (v: unknown) => resolve(v as T),
+          reject,
+        });
+        postMessage({
+          action: command,
+          payload: { ...cmdPayload, requestId },
+        });
+      });
+    }
 
     useImperativeHandle(ref, () => ({
       postMessage(params) {
@@ -368,6 +409,65 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           },
         });
       },
+      calculateSP(startLocation, endLocation, routeType = 'auto') {
+        return bridgeCall(MapActions.CALCULATE_SP, {
+          startLocation,
+          endLocation,
+          routeType,
+        });
+      },
+      calculateSP_v2(startLocation, endLocation, routeType = 'auto') {
+        return bridgeCall(MapActions.CALCULATE_SP_V2, {
+          startLocation,
+          endLocation,
+          routeType,
+        });
+      },
+      getLevels() {
+        return bridgeCall(MapActions.GET_LEVELS, {});
+      },
+      getNodes() {
+        return bridgeCall(MapActions.GET_NODES, {});
+      },
+      getPaths() {
+        return bridgeCall(MapActions.GET_PATHS, {});
+      },
+      isMultiBuilding() {
+        return bridgeCall<boolean>(MapActions.IS_MULTI_BUILDING, {});
+      },
+      getNavigationDetails(offset = 0) {
+        return bridgeCall(MapActions.GET_NAVIGATION_DETAILS, { offset });
+      },
+      prevLevelId() {
+        return bridgeCall<string | undefined>(MapActions.PREV_LEVEL_ID, {});
+      },
+      nextLevelId() {
+        return bridgeCall<string | undefined>(MapActions.NEXT_LEVEL_ID, {});
+      },
+      hasPrevNavigate() {
+        return bridgeCall<boolean>(MapActions.HAS_PREV_NAVIGATE, {});
+      },
+      hasNextNavigate() {
+        return bridgeCall<boolean>(MapActions.HAS_NEXT_NAVIGATE, {});
+      },
+      prevBuildingId() {
+        return bridgeCall<string | boolean | undefined>(
+          MapActions.PREV_BUILDING_ID,
+          {}
+        );
+      },
+      nextBuildingId() {
+        return bridgeCall<string | boolean | undefined>(
+          MapActions.NEXT_BUILDING_ID,
+          {}
+        );
+      },
+      hasPrevBuildingNavigate() {
+        return bridgeCall<boolean>(MapActions.HAS_PREV_BUILDING_NAVIGATE, {});
+      },
+      hasNextBuildingNavigate() {
+        return bridgeCall<boolean>(MapActions.HAS_NEXT_BUILDING_NAVIGATE, {});
+      },
       reload() {
         postMessage({
           action: MapActions.RELOAD,
@@ -412,6 +512,22 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
           }
 
           const mapEvent = parsed.payload;
+
+          if (
+            mapEvent.action === MapResponses.BRIDGE_RESULT &&
+            mapEvent.data?.requestId != null
+          ) {
+            const d = mapEvent.data;
+            const pending = bridgePendingRef.current.get(d.requestId);
+            if (pending) {
+              bridgePendingRef.current.delete(d.requestId);
+              if (d.ok) {
+                pending.resolve(d.result);
+              } else {
+                pending.reject(new Error(d.error ?? 'Bridge command failed'));
+              }
+            }
+          }
 
           if (onEvent) {
             onEvent(mapEvent);
@@ -462,6 +578,30 @@ const MechanicMap = forwardRef<MechanicMapHandle, MechanicMapProps>(
               if (mapEvent.data !== undefined) {
                 onMapError?.(mapEvent.data);
               }
+              break;
+            case MapResponses.LEVELS_READY:
+              if (mapEvent.data !== undefined) {
+                onLevelsReady?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.LEVEL_READY:
+              if (mapEvent.data !== undefined) {
+                onLevelReady?.(mapEvent.data);
+              }
+              break;
+            case MapResponses.NAVIGATION_STATE:
+              onNavigationState?.(mapEvent.data ?? null);
+              break;
+            case MapResponses.BEACON_CLICKED:
+              onBeaconClicked?.(mapEvent.data);
+              break;
+            case MapResponses.POSITION_CHANGED:
+              onPositionChanged?.(mapEvent.data);
+              break;
+            case MapResponses.LOCATION_HIGHLIGHTED_SINGLE:
+              onSingleLocationHighlighted?.(mapEvent.data);
+              break;
+            case MapResponses.BRIDGE_RESULT:
               break;
           }
         }}
