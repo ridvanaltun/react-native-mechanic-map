@@ -52,7 +52,7 @@ Remember to add tests for your change if possible. Run the unit tests by:
 yarn test
 ```
 
-To edit native example files, open `example/ios/AwesomeProject.xcworkspace` in Xcode (not the `.xcodeproj` alone when using CocoaPods).
+To edit native example files, open `example/ios/MechanicMapDemo.xcworkspace` in Xcode (not the `.xcodeproj` alone when using CocoaPods).
 
 To edit Android example files, open `example/android` in Android Studio.
 
